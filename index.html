@@ -1,883 +1,363 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>HappeeChat2</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --bg:#0b0c0f;
-    --panel:#0f1114;
-    --muted:#9aa3b2;
-    --accent:#4da3ff;
-    --hover:#15171a;
-    --mention-bg:#4a3b00;
-    --mention-highlight:#ffd54a;
-    --danger:#ff5c5c;
-    font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  }
-  html,body{height:100%;margin:0;background:var(--bg);color:#e6eef6}
-  .app{display:flex;height:100vh;gap:12px;padding:16px;box-sizing:border-box}
-  .left{width:280px;background:linear-gradient(180deg,#0e0f12, #101216);border-radius:12px;padding:12px;box-sizing:border-box;display:flex;flex-direction:column;gap:12px}
-  .logo{font-weight:700;font-size:20px;padding:8px 12px}
-  .list{flex:1;overflow:auto;padding:4px;display:flex;flex-direction:column;gap:8px}
-  .list .item{display:flex;align-items:center;gap:10px;padding:8px;border-radius:8px;cursor:pointer}
-  .list .item:hover{background:var(--hover)}
-  .avatar{width:40px;height:40px;border-radius:8px;flex:0 0 40px;object-fit:cover;background:#222}
-  .name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .count{background:#222;padding:4px 6px;border-radius:6px;font-size:12px;color:var(--muted)}
-  .topbar{display:flex;justify-content:space-between;align-items:center;gap:8px}
-  .main{flex:1;background:var(--panel);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:12px;box-sizing:border-box}
-  .chat-header{display:flex;align-items:center;justify-content:space-between;gap:8px}
-  .chat-title{display:flex;align-items:center;gap:10px}
-  .chat-area{flex:1;overflow:auto;padding:8px;background:linear-gradient(0deg, rgba(255,255,255,0.01), transparent);border-radius:8px}
-  .message{display:flex;gap:10px;padding:8px;border-radius:8px;margin-bottom:6px;transition:background .12s}
-  .message:hover{background:var(--hover)}
-  .message .meta{font-size:12px;color:var(--muted)}
-  .msg-avatar{width:44px;height:44px;border-radius:8px;object-fit:cover}
-  .msg-body{flex:1}
-  .msg-username{font-weight:600;font-size:14px}
-  .msg-text{margin-top:4px;white-space:pre-wrap}
-  .msg-time{font-size:11px;color:var(--muted);margin-left:8px}
-  .input-row{display:flex;gap:8px;align-items:center}
-  .compose{flex:1;display:flex;gap:8px;align-items:center}
-  .textinput{flex:1;padding:10px;border-radius:10px;background:#0b0c0f;border:1px solid #131315;color:#e7eef6;outline:none}
-  .btn{background:var(--accent);color:#071024;padding:8px 12px;border-radius:8px;border:none;cursor:pointer}
-  .small-btn{background:#1a1b1d;padding:6px;border-radius:8px;border:1px solid #222;color:var(--muted);cursor:pointer}
-  .attachment{display:block;margin-top:8px}
-  .mention{color:var(--accent);font-weight:700}
-  .mention-me{background:var(--mention-highlight);color:#000;padding:2px 6px;border-radius:6px}
-  .yellow-bg{background:linear-gradient(90deg,#4a3b0022,#4a3b0012);border-left:3px solid var(--mention-highlight)}
-  .hover-delete{opacity:0;visibility:hidden}
-  .message:hover .hover-delete{opacity:1;visibility:visible}
-  .admin-delete{background:transparent;border:none;color:var(--danger);cursor:pointer}
-  .login-overlay{position:fixed;inset:0;background:linear-gradient(180deg, rgba(2,6,23,0.9), rgba(2,6,23,0.95));display:flex;align-items:center;justify-content:center;z-index:9999}
-  .login-box{width:520px;background:#0d0f11;border-radius:12px;padding:20px;box-sizing:border-box}
-  .accounts{display:flex;flex-direction:column;gap:8px;max-height:200px;overflow:auto}
-  .account-row{display:flex;align-items:center;gap:8px;padding:8px;border-radius:8px;background:#0b0c0f;cursor:pointer}
-  .muted{color:var(--muted)}
-  .top-controls{display:flex;gap:8px;align-items:center}
-  .volume{display:flex;align-items:center;gap:8px}
-  .read-btn{background:#1c1d1f;border-radius:8px;padding:6px 8px;border:none;color:var(--muted);cursor:pointer}
-  .unread-badge{background:#222;padding:2px 6px;border-radius:6px;font-size:12px}
-  .file-preview img{max-width:360px;border-radius:6px;margin-top:6px}
-  .file-preview video, .file-preview audio{max-width:360px;margin-top:6px}
-  .top-right-controls{display:flex;gap:8px;align-items:center}
-  .search{padding:8px;border-radius:8px;background:#0b0c0f;border:1px solid #131315;color:var(--muted)}
-  footer.small{font-size:12px;color:var(--muted);margin-top:8px}
-  /* small screens */
-  @media (max-width:900px){ .left{display:none} }
-</style>
+  <meta charset="UTF-8">
+  <title>HappeeChat2</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background-color: #2b2d31;
+      color: #ddd;
+      overflow: hidden;
+    }
+    #loginScreen, #chatScreen {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+    }
+    #loginScreen {
+      background: #1e1f22;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    #accountsList {
+      display: flex;
+      flex-direction: column;
+      max-height: 300px;
+      overflow-y: auto;
+      margin-bottom: 1em;
+    }
+    .accountItem {
+      display: flex;
+      align-items: center;
+      background: #2b2d31;
+      padding: 0.5em;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 0.25em 0;
+    }
+    .accountItem img {
+      width: 32px; height: 32px; border-radius: 50%; margin-right: 0.5em;
+    }
+    #chatScreen { display: none; flex-direction: row; height: 100%; }
+    #sidebar {
+      width: 70px;
+      background: #1e1f22;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0.5em 0;
+      overflow-y: auto;
+    }
+    .chatOption {
+      width: 50px; height: 50px;
+      margin: 0.5em 0;
+      background: #2b2d31;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      position: relative;
+    }
+    .chatOption img { width: 32px; height: 32px; border-radius: 50%; }
+    .chatOption .unread {
+      position: absolute;
+      bottom: 0; right: 0;
+      background: red; color: white;
+      font-size: 10px;
+      padding: 2px 4px;
+      border-radius: 10px;
+    }
+    #messagesArea {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #313338;
+    }
+    #messagesLog {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1em;
+    }
+    .message {
+      padding: 0.25em;
+      margin: 0.25em 0;
+      border-radius: 6px;
+      transition: background 0.2s;
+    }
+    .message:hover { background: #3c3f44; }
+    .mention { color: #4da3ff; }
+    .mentionHighlight { background: #665500; }
+    .message .meta { font-size: 0.7em; color: #aaa; }
+    #inputBar {
+      display: flex;
+      padding: 0.5em;
+      background: #2b2d31;
+    }
+    #inputBar input[type="text"] {
+      flex: 1;
+      padding: 0.5em;
+      border: none;
+      border-radius: 6px;
+      margin: 0 0.5em;
+      background: #404249;
+      color: white;
+    }
+    #inputBar button, #inputBar input[type="file"] {
+      background: #5865f2;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 0.5em;
+      cursor: pointer;
+    }
+    #topBar {
+      background: #2b2d31;
+      padding: 0.5em;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    #volumeSlider { width: 100px; }
+    #readMessagesBtn { background: #4da3ff; border:none; padding:0.3em 0.6em; border-radius:6px; cursor:pointer;}
+    .deleteBtn {
+      color: red; cursor: pointer; font-size: 0.7em; margin-left: 0.5em;
+    }
+  </style>
 </head>
 <body>
-<div class="app">
-  <div class="left">
-    <div class="topbar">
-      <div class="logo">HappeeChat2</div>
-      <div class="top-right-controls">
-        <div class="volume">
-          <label class="muted">Ping</label>
-          <input id="vol" type="range" min="0" max="1" step="0.01" value="0.7" />
-        </div>
-      </div>
+  <div id="loginScreen">
+    <h1>HappeeChat2</h1>
+    <div id="accountsList"></div>
+    <button onclick="showCreateAccount()">Create Account</button>
+    <div id="createAccountForm" style="display:none; flex-direction:column; align-items:center;">
+      <input id="newUsername" placeholder="Username">
+      <input id="newPassword" type="password" placeholder="Password">
+      <input id="newAvatar" type="file" accept="image/*">
+      <button onclick="createAccount()">Submit</button>
     </div>
-
-    <div style="display:flex;gap:8px;align-items:center">
-      <button id="btnPublic" class="small-btn">Public Chat</button>
-      <div id="publicCount" class="count">0</div>
-    </div>
-
-    <div class="list" id="usersList">
-      <!-- user list will be rendered here -->
-    </div>
-
-    <div style="display:flex;gap:8px;align-items:center">
-      <input id="userFilter" class="search" placeholder="search users..." />
-      <button id="createBtn" class="small-btn">New Account</button>
-    </div>
-
-    <footer class="small">Logged-in as: <span id="currentUserLabel" class="muted">none</span></footer>
   </div>
 
-  <div class="main">
-    <div class="chat-header">
-      <div class="chat-title">
-        <img id="chatAvatar" src="" class="avatar" style="width:46px;height:46px" />
-        <div>
-          <div id="chatName" style="font-weight:700;font-size:16px">Public Chat</div>
-          <div id="chatSub" class="muted" style="font-size:12px">Global channel</div>
-        </div>
+  <div id="chatScreen">
+    <div id="sidebar"></div>
+    <div id="messagesArea">
+      <div id="topBar">
+        <button id="readMessagesBtn" onclick="markAllRead()">Read Messages</button>
+        <input id="volumeSlider" type="range" min="0" max="1" step="0.1" value="1">
       </div>
-
-      <div style="display:flex;align-items:center;gap:8px">
-        <button id="readMsgs" class="read-btn">Read Messages</button>
-        <div id="curUnread" class="unread-badge">0</div>
-      </div>
-    </div>
-
-    <div class="chat-area" id="chatArea" tabindex="0">
-      <!-- messages -->
-    </div>
-
-    <div class="input-row">
-      <div class="compose">
-        <button id="attachBtn" class="small-btn">+</button>
-        <input id="fileInput" type="file" multiple style="display:none" />
-        <input id="textInput" class="textinput" placeholder="Message... (press Enter to send)" />
-        <button id="sendBtn" class="btn">Send Message</button>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:8px">
-        <button id="logoutBtn" class="small-btn">Logout</button>
+      <div id="messagesLog"></div>
+      <div id="inputBar">
+        <input id="fileInput" type="file" style="display:none" onchange="sendFile(this.files[0])">
+        <button onclick="document.getElementById('fileInput').click()">+</button>
+        <input id="msgInput" type="text" placeholder="Message">
+        <button onclick="sendMessage()">Send</button>
       </div>
     </div>
   </div>
-</div>
 
-<!-- Login / Create account overlay -->
-<div id="loginOverlay" class="login-overlay" style="display:flex">
-  <div class="login-box">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-      <div style="font-weight:700;font-size:18px">Sign in — HappeeChat2</div>
-      <div class="muted">Persistent accounts in Firebase</div>
-    </div>
+  <audio id="pingSound" src="ping.mp3"></audio>
 
-    <div style="display:flex;gap:12px">
-      <div style="flex:1">
-        <div style="font-weight:600;margin-bottom:6px">Existing Accounts</div>
-        <div class="accounts" id="accountsList">
-          <!-- filled by JS -->
-        </div>
-        <div style="margin-top:8px">
-          <button id="showCreate" class="btn">Create New Account</button>
-        </div>
-      </div>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getDatabase, ref, set, push, onChildAdded, onValue, remove, update } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+    import { getStorage, ref as sRef, uploadString, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-storage.js";
 
-      <div style="flex:1">
-        <div style="font-weight:600;margin-bottom:6px">Quick Create</div>
-        <div style="display:flex;flex-direction:column;gap:8px">
-          <input id="newUsername" placeholder="Username" />
-          <input id="newPassword" placeholder="Password" type="password" />
-          <label class="muted">Avatar (optional)</label>
-          <input id="newAvatar" type="file" />
-          <div style="display:flex;gap:8px">
-            <button id="createNow" class="btn">Create</button>
-            <button id="cancelCreate" class="small-btn">Cancel</button>
-          </div>
-          <div id="createMsg" class="muted" style="font-size:13px"></div>
-        </div>
-      </div>
-    </div>
-
-    <div style="margin-top:12px" class="muted small">Note: choose username carefully. The admin account <strong>100happee</strong> is reserved and cannot be deleted by others.</div>
-  </div>
-</div>
-
-<!-- message template dependencies -->
-<audio id="ping" src="./ping.mp3" preload="auto"></audio>
-
-<script type="module">
-/* HappeeChat2 single-file app
-   - Uses Firebase Realtime Database (modular v9)
-   - Stores users & messages as JSON under your RTDB
-   - Avatars and file attachments are Base64 stored in DB (binary/base64 requirement)
-   - Passwords are SHA-256 hashed client-side before being stored
-   - Admin username "100happee" receives admin privileges (set during signup)
-   - Auto-clean: removes messages older than 7 days, removes idle users older than 30 days on each load
-   - 500 message public chat limit enforced
-*/
-
-/* =======================
-   Firebase config & init
-   ======================= */
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-import {
-  getDatabase, ref, push, set, onValue, child, get, remove, update, query, orderByChild, limitToLast
-} from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyDkpDlINFiUzR0PsFRcxxk-N2fhHLnpACI",
-  authDomain: "hchat2-1d004.firebaseapp.com",
-  databaseURL: "https://hchat2-1d004-default-rtdb.firebaseio.com",
-  projectId: "hchat2-1d004",
-  storageBucket: "hchat2-1d004.firebasestorage.app",
-  messagingSenderId: "807685526215",
-  appId: "1:807685526215:web:6b9042099ff0b464be24e2"
-};
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-/* =======================
-   App state
-   ======================= */
-let currentUser = null; // { uid, username, avatar, isAdmin }
-let currentChat = { type: 'public', id: 'public' }; // or type 'dm' {type:'dm',id: 'uidA_uidB'}
-const pingEl = document.getElementById('ping');
-const volEl = document.getElementById('vol');
-const msgLimitPublic = 500;
-const messagePruneDays = 7;
-const userIdleDays = 30;
-
-// Blacklist (edit here)
-const blacklistWords = ['badword', 'verybad']; // replace with desired words
-
-/* =======================
-   DOM refs
-   ======================= */
-const loginOverlay = document.getElementById('loginOverlay');
-const accountsList = document.getElementById('accountsList');
-const createBtn = document.getElementById('showCreate');
-const createNow = document.getElementById('createNow');
-const cancelCreate = document.getElementById('cancelCreate');
-const newUsername = document.getElementById('newUsername');
-const newPassword = document.getElementById('newPassword');
-const newAvatar = document.getElementById('newAvatar');
-const createMsg = document.getElementById('createMsg');
-
-const usersList = document.getElementById('usersList');
-const btnPublic = document.getElementById('btnPublic');
-const publicCount = document.getElementById('publicCount');
-const chatArea = document.getElementById('chatArea');
-const chatName = document.getElementById('chatName');
-const chatSub = document.getElementById('chatSub');
-const chatAvatar = document.getElementById('chatAvatar');
-const textInput = document.getElementById('textInput');
-const sendBtn = document.getElementById('sendBtn');
-const fileInput = document.getElementById('fileInput');
-const attachBtn = document.getElementById('attachBtn');
-const accountsOverlay = document.getElementById('accountsList');
-const logoutBtn = document.getElementById('logoutBtn');
-const currentUserLabel = document.getElementById('currentUserLabel');
-const readMsgsBtn = document.getElementById('readMsgs');
-const curUnread = document.getElementById('curUnread');
-
-/* ================
-   Utilities
-   ================ */
-function uidFromUsername(name){ return 'u_' + name.toLowerCase().replace(/\s+/g,'_'); }
-function nowTs(){ return Date.now(); }
-function fmtTime(ts){
-  const d = new Date(ts);
-  const mm = String(d.getMonth() + 1).padStart(2,'0');
-  const dd = String(d.getDate()).padStart(2,'0');
-  let hours = d.getHours();
-  const ampm = hours >= 12 ? 'p' : 'a';
-  hours = (hours % 12) || 12;
-  const min = String(d.getMinutes()).padStart(2,'0');
-  return `[${mm}/${dd} at ${hours}:${min}${ampm}]`;
-}
-function escapeHtml(s){ return (s||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
-function applyBlacklist(text){
-  if(!text) return text;
-  let res = text;
-  for(const w of blacklistWords){
-    const pattern = new RegExp('\\b' + w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '\\b','gi');
-    res = res.replace(pattern, m => '*'.repeat(m.length));
-  }
-  return res;
-}
-async function sha256Hex(text){
-  const enc = new TextEncoder();
-  const data = enc.encode(text);
-  const hash = await crypto.subtle.digest('SHA-256', data);
-  const arr = Array.from(new Uint8Array(hash));
-  return arr.map(b => b.toString(16).padStart(2,'0')).join('');
-}
-function makeDMId(a,b){
-  // deterministic id for pair
-  return a < b ? `${a}_${b}` : `${b}_${a}`;
-}
-function fileToBase64(file){
-  return new Promise((res,rej)=>{
-    const r = new FileReader();
-    r.onload = ()=> res(r.result.split(',')[1]); // return base64 only
-    r.onerror = rej;
-    r.readAsDataURL(file);
-  });
-}
-
-/* ============================
-   Read / write helpers (RTDB)
-   ============================ */
-async function fetchUsers(){
-  const snap = await get(ref(db, 'users'));
-  return snap.exists() ? snap.val() : {};
-}
-async function setUser(uid,userObj){
-  await set(ref(db, `users/${uid}`), userObj);
-}
-async function removeUser(uid){
-  await remove(ref(db, `users/${uid}`));
-}
-async function pushPublicMessage(msg){
-  const node = ref(db, 'messages/public');
-  const p = push(node);
-  await set(p, msg);
-  // enforce message limit
-  const allSnap = await get(ref(db, 'messages/public'));
-  if(allSnap.exists()){
-    const messages = allSnap.val();
-    const keys = Object.keys(messages);
-    if(keys.length > msgLimitPublic){
-      // sort by timestamp; remove oldest
-      const sorted = keys.sort((a,b)=>messages[a].timestamp - messages[b].timestamp);
-      const toRemove = sorted.slice(0, keys.length - msgLimitPublic);
-      for(const k of toRemove) await remove(ref(db, `messages/public/${k}`));
-    }
-  }
-}
-async function pushDMMessage(dmId,msg){
-  const node = ref(db, `messages/dm/${dmId}`);
-  const p = push(node);
-  await set(p, msg);
-}
-async function setUnread(userUid, chatId, count){
-  await set(ref(db, `unread/${userUid}/${chatId}`), count);
-}
-
-/* ============================
-   Rendering & event wiring
-   ============================ */
-
-async function loadAndRenderAccounts(){
-  accountsList.innerHTML = '';
-  const users = await fetchUsers();
-  const entries = Object.entries(users).filter(([uid,u]) => !u.isDeleted);
-  if(entries.length === 0){
-    accountsList.innerHTML = '<div class="muted">No accounts yet</div>';
-    return;
-  }
-  for(const [uid,u] of entries){
-    const row = document.createElement('div');
-    row.className = 'account-row';
-    row.innerHTML = `<img src="${u.avatarBase64 ? `data:${u.avatarType};base64,${u.avatarBase64}` : ''}" class="avatar" style="width:40px;height:40px;border-radius:8px" />
-                     <div style="flex:1"><div style="font-weight:600">${escapeHtml(u.username)}</div><div class="muted" style="font-size:12px">Last active: ${new Date(u.lastActive||0).toLocaleString()}</div></div>
-                     <div><button class="small-btn">Sign in</button></div>`;
-    row.onclick = async ()=>{
-      // prompt for password modal (simple prompt)
-      const pw = prompt(`Enter password for ${u.username}`);
-      if(!pw) return;
-      const hash = await sha256Hex(pw);
-      if(hash === u.passwordHash){
-        // successful login
-        currentUser = { uid, username: u.username, avatarBase64: u.avatarBase64, avatarType: u.avatarType, isAdmin: !!u.isAdmin };
-        await update(ref(db, `users/${uid}`), { lastActive: nowTs() });
-        loginOverlay.style.display = 'none';
-        currentUserLabel.textContent = currentUser.username;
-        initAfterLogin();
-      } else {
-        alert('Incorrect password');
-      }
+    const firebaseConfig = {
+      apiKey: "AIzaSyDkpDlINFiUzR0PsFRcxxk-N2fhHLnpACI",
+      authDomain: "hchat2-1d004.firebaseapp.com",
+      databaseURL: "https://hchat2-1d004-default-rtdb.firebaseio.com",
+      projectId: "hchat2-1d004",
+      storageBucket: "hchat2-1d004.appspot.com",
+      messagingSenderId: "807685526215",
+      appId: "1:807685526215:web:6b9042099ff0b464be24e2"
     };
-    accountsList.appendChild(row);
-  }
-}
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const storage = getStorage(app);
 
-/* Create account flow */
-createBtn.onclick = ()=> {
-  document.getElementById('newUsername').focus();
-};
-cancelCreate.onclick = ()=> {
-  newUsername.value=''; newPassword.value=''; newAvatar.value='';
-};
-createNow.onclick = async ()=>{
-  const name = (newUsername.value||'').trim();
-  const pw = (newPassword.value||'').trim();
-  if(!name || !pw){ createMsg.textContent = 'username and password required'; return; }
-  // disallow duplicate username
-  const users = await fetchUsers();
-  for(const [uid,u] of Object.entries(users||{})){
-    if(u.username.toLowerCase() === name.toLowerCase() && !u.isDeleted){ createMsg.textContent = 'username already exists'; return; }
-  }
-  const uid = uidFromUsername(name);
-  // prepare avatar
-  let avatarBase64 = '';
-  let avatarType = '';
-  if(newAvatar.files && newAvatar.files[0]){
-    const f = newAvatar.files[0];
-    if(f.size > 4*1024*1024){ createMsg.textContent = 'avatar larger than 4MB'; return; }
-    avatarBase64 = await fileToBase64(f);
-    avatarType = f.type || 'image/png';
-  }
-  if(name === '100happee'){
-    // reserved admin account allowed
-  }
-  const passwordHash = await sha256Hex(pw);
-  // store user
-  const userObj = {
-    username: name,
-    passwordHash,
-    avatarBase64,
-    avatarType,
-    createdAt: nowTs(),
-    lastActive: nowTs(),
-    isAdmin: name === '100happee',
-    isDeleted: false
-  };
-  await setUser(uid, userObj);
-  createMsg.textContent = 'Account created. Sign in by selecting it in the left list.';
-  // refresh accounts list
-  await loadAndRenderAccounts();
-};
+    let currentUser = null;
+    let currentChat = "public";
+    let volume = 1;
+    let unreadCount = 0;
+    const blacklist = ["badword1","badword2"]; // put words here
 
-/* When user is logged in, initialize listeners */
-async function initAfterLogin(){
-  loginOverlay.style.display = 'none';
-  currentUserLabel.textContent = currentUser.username;
-  // render left sidebar users
-  renderUsersList();
-  // start listeners for public & relevant DM
-  listenMessagesPublic();
-  listenUsers();
-  // clear chat area
-  openPublicChat();
-}
+    function showCreateAccount(){ document.getElementById('createAccountForm').style.display='flex'; }
 
-/* Render users list on left (DMs) */
-async function renderUsersList(){
-  usersList.innerHTML = '';
-  const users = await fetchUsers();
-  const entries = Object.entries(users).filter(([uid,u]) => !u.isDeleted && uid !== currentUser.uid);
-  // public
-  const pubRow = document.createElement('div');
-  pubRow.className = 'item';
-  pubRow.innerHTML = `<img src="" class="avatar" style="width:40px;height:40px;border-radius:8px;background:#111" />
-                      <div class="name">Public</div>
-                      <div class="count" id="publicLeftCount">0</div>`;
-  pubRow.onclick = ()=> openPublicChat();
-  usersList.appendChild(pubRow);
-
-  for(const [uid,u] of entries){
-    const row = document.createElement('div');
-    row.className = 'item';
-    const avatarSrc = u.avatarBase64 ? `data:${u.avatarType};base64,${u.avatarBase64}` : '';
-    row.innerHTML = `<img src="${avatarSrc}" class="avatar" />
-                     <div class="name">${escapeHtml(u.username)}</div>
-                     <div class="count" id="count_${uid}">0</div>`;
-    row.onclick = ()=> openDM(uid, u.username, avatarSrc);
-    usersList.appendChild(row);
-  }
-}
-
-/* Open public chat */
-async function openPublicChat(){
-  currentChat = { type:'public', id:'public' };
-  chatName.textContent = 'Public Chat';
-  chatSub.textContent = 'Global channel';
-  chatAvatar.src = '';
-  chatArea.innerHTML = '';
-  loadPublicMessages();
-  updateUnreadDisplay();
-}
-
-/* Open DM */
-async function openDM(otherUid, otherName, otherAvatar){
-  const dmId = makeDMId(currentUser.uid, otherUid);
-  currentChat = { type:'dm', id: dmId, otherUid, otherName };
-  chatName.textContent = otherName;
-  chatSub.textContent = 'Direct message';
-  chatAvatar.src = otherAvatar || '';
-  chatArea.innerHTML = '';
-  listenDM(dmId);
-  updateUnreadDisplay();
-}
-
-/* Update unread display for currentChat */
-async function updateUnreadDisplay(){
-  if(!currentUser) return;
-  const snap = await get(ref(db, `unread/${currentUser.uid}/${currentChat.id}`));
-  const count = snap.exists() ? snap.val() : 0;
-  curUnread.textContent = count || 0;
-  // Title badge
-  const totalsnap = await get(ref(db, `unread/${currentUser.uid}`));
-  let total=0;
-  if(totalsnap.exists()){
-    const data = totalsnap.val();
-    for(const k of Object.keys(data||{})) total += Number(data[k]||0);
-  }
-  document.title = (total>0?`[${total}] `:'') + 'HappeeChat2';
-}
-
-/* Mark current chat as read */
-readMsgsBtn.onclick = async ()=>{
-  if(!currentUser) return;
-  await set(ref(db, `unread/${currentUser.uid}/${currentChat.id}`), 0);
-  updateUnreadDisplay();
-};
-
-/* Listeners for public messages */
-let publicListener = null;
-function listenMessagesPublic(){
-  const node = ref(db, 'messages/public');
-  // attach a general onValue
-  onValue(node, async snap => {
-    const msgs = snap.exists() ? snap.val() : {};
-    // render
-    if(currentChat.type === 'public') renderMessages(Object.entries(msgs||{}));
-    // update unread counts for users: increment currentUser unread when messages arrive and not by self
-    // For this prototype, we update unread for currentUser only on receiving new messages.
-    // Count unread for other users is kept simple.
-    // Count total messages:
-    const total = Object.keys(msgs||{}).length;
-    publicCount.textContent = String(total);
-    document.getElementById('publicLeftCount').textContent = total;
-  });
-}
-
-/* load public messages once */
-async function loadPublicMessages(){
-  const snap = await get(ref(db, 'messages/public'));
-  const msgs = snap.exists() ? snap.val() : {};
-  renderMessages(Object.entries(msgs||{}));
-}
-
-/* Render messages list (array of [key,msg]) */
-function renderMessages(entries){
-  // entries: array of [key,msg]
-  // sort by timestamp ascending
-  entries.sort((a,b)=> (a[1].timestamp||0) - (b[1].timestamp||0));
-  chatArea.innerHTML = '';
-  for(const [k,msg] of entries){
-    // skip if msg.from is deleted (we rely on isDeleted flag when deleting users)
-    const el = document.createElement('div');
-    el.className = 'message';
-    // highlight if mention of currentUser
-    let msgText = escapeHtml(applyBlacklist(msg.text || ''));
-    // detect https links and youtube
-    msgText = msgText.replace(/(https:\/\/[^\s]+)/g, (m)=>{
-      // preserve escape
-      const url = m;
-      // YouTube embed?
-      const y = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([A-Za-z0-9_\-]+)/);
-      if(y){
-        return `<a class="ytlink" href="${url}" target="_blank">${url}</a><div class="file-preview"><iframe width="320" height="180" src="https://www.youtube.com/embed/${y[1]}" frameborder="0" allowfullscreen></iframe></div>`;
-      }
-      return `<a href="${url}" target="_blank">${url}</a>`;
-    });
-    // mentions: turn @username into link/blue
-    if(currentUser){
-      const myname = currentUser.username.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-      const mentionRe = new RegExp('@([A-Za-z0-9_\\-]+)','g');
-      msgText = msgText.replace(mentionRe, (m, p1)=>{
-        if(p1.toLowerCase() === currentUser.username.toLowerCase()){
-          return `<span class="mention-me">@<span class="mention">${escapeHtml(p1)}</span></span>`;
+    function createAccount(){
+      const username = document.getElementById('newUsername').value;
+      const password = document.getElementById('newPassword').value;
+      const file = document.getElementById('newAvatar').files[0];
+      if(!username || !password) return alert("Missing fields");
+      const usersRef = ref(db, "users/"+username);
+      onValue(usersRef, snap=>{
+        if(snap.exists()){ alert("Username exists"); return; }
+        if(file){
+          const reader = new FileReader();
+          reader.onload = e=>{
+            set(usersRef, { password: password, avatar: e.target.result, lastActive: Date.now() });
+          };
+          reader.readAsDataURL(file);
         } else {
-          return `<span class="mention">@${escapeHtml(p1)}</span>`;
+          set(usersRef, { password: password, avatar: "", lastActive: Date.now() });
         }
+        document.getElementById('createAccountForm').style.display='none';
+      }, {onlyOnce:true});
+    }
+
+    const accountsList = document.getElementById('accountsList');
+    onValue(ref(db,"users"), snap=>{
+      accountsList.innerHTML="";
+      snap.forEach(child=>{
+        const u=child.key, d=child.val();
+        if(!d) return;
+        const div=document.createElement('div');
+        div.className="accountItem";
+        div.innerHTML=`<img src="${d.avatar||''}"><span>${u}</span>`;
+        div.onclick=()=>{
+          const pw=prompt("Password for "+u);
+          if(pw===d.password){ login(u,d); } else alert("Wrong password");
+        };
+        accountsList.appendChild(div);
+      });
+    });
+
+    function login(u,d){
+      currentUser={username:u, avatar:d.avatar};
+      document.getElementById('loginScreen').style.display="none";
+      document.getElementById('chatScreen').style.display="flex";
+      updateSidebar();
+      loadMessages();
+    }
+
+    function updateSidebar(){
+      const sidebar=document.getElementById('sidebar');
+      sidebar.innerHTML="";
+      // public chat option
+      const publicOpt=document.createElement('div');
+      publicOpt.className="chatOption";
+      publicOpt.innerHTML="#";
+      publicOpt.onclick=()=>{currentChat="public"; loadMessages();};
+      sidebar.appendChild(publicOpt);
+      // users
+      onValue(ref(db,"users"), snap=>{
+        snap.forEach(child=>{
+          const uname=child.key, d=child.val();
+          if(!d) return;
+          if(uname===currentUser.username) return;
+          const opt=document.createElement('div');
+          opt.className="chatOption";
+          opt.innerHTML=`<img src="${d.avatar}">`;
+          opt.onclick=()=>{currentChat=uname; loadMessages();};
+          sidebar.appendChild(opt);
+        });
       });
     }
-    const avatarSrc = msg.avatarBase64 ? `data:${msg.avatarType};base64,${msg.avatarBase64}` : '';
-    el.innerHTML = `
-      <img src="${avatarSrc}" class="msg-avatar" />
-      <div class="msg-body">
-        <div style="display:flex;align-items:center;gap:8px">
-          <div class="msg-username">${escapeHtml(msg.username)}</div>
-          <div class="msg-time">${fmtTime(msg.timestamp)}</div>
-          <div style="margin-left:auto" class="meta">${msg.id || ''}</div>
-        </div>
-        <div class="msg-text">${msgText}</div>
-        <div class="file-preview"></div>
-      </div>
-      <div class="hover-delete"></div>
-    `;
-    // attachments
-    const preview = el.querySelector('.file-preview');
-    if(msg.attachments && Array.isArray(msg.attachments)){
-      for(const a of msg.attachments){
-        if(a.type.startsWith('image/')){
-          const img = document.createElement('img');
-          img.src = `data:${a.type};base64,${a.base64}`;
-          img.style.maxWidth = '360px';
-          preview.appendChild(img);
-          const dl = document.createElement('a'); dl.href = img.src; dl.download = a.name || 'image'; dl.textContent = 'Download image'; dl.style.display='block'; preview.appendChild(dl);
-        } else if(a.type.startsWith('video/')){
-          const v = document.createElement('video');
-          v.controls = true; v.src = `data:${a.type};base64,${a.base64}`; preview.appendChild(v);
-          const dl = document.createElement('a'); dl.href = v.src; dl.download = a.name || 'video'; dl.textContent = 'Download video'; dl.style.display='block'; preview.appendChild(dl);
-        } else if(a.type.startsWith('audio/')){
-          const au = document.createElement('audio'); au.controls=true; au.src = `data:${a.type};base64,${a.base64}`; preview.appendChild(au);
-          const dl = document.createElement('a'); dl.href = au.src; dl.download = a.name || 'audio'; dl.textContent = 'Download audio'; dl.style.display='block'; preview.appendChild(dl);
-        } else {
-          const link = document.createElement('a'); link.href = `data:${a.type};base64,${a.base64}`; link.download = a.name; link.textContent = `Download ${a.name}`; preview.appendChild(link);
-        }
-      }
+
+    function loadMessages(){
+      const log=document.getElementById('messagesLog');
+      log.innerHTML="";
+      const path = currentChat==="public" ? "messages/public" : "dms/"+chatKey(currentUser.username,currentChat);
+      onValue(ref(db,path), snap=>{
+        log.innerHTML="";
+        let count=0;
+        snap.forEach(c=>{
+          const m=c.val();
+          if(!m) return;
+          count++;
+          if(count>500 && currentChat==="public"){ remove(ref(db,path+"/"+c.key)); return; }
+          renderMessage(m,c.key);
+        });
+      });
     }
-    // admin delete control
-    if(currentUser && currentUser.isAdmin){
-      const hd = el.querySelector('.hover-delete');
-      const delBtn = document.createElement('button');
-      delBtn.className = 'admin-delete';
-      delBtn.textContent = 'Delete';
-      delBtn.onclick = async (ev)=>{
-        ev.stopPropagation();
-        if(!confirm('Delete this message?')) return;
-        // attempt to delete message from both public and DM storage
-        if(msg._path && msg._path.startsWith('messages/public')){
-          // if key is known
-          await remove(ref(db, `messages/public/${k}`));
-        } else {
-          // search and remove from both places
-          const pub = await get(ref(db, `messages/public/${k}`));
-          if(pub.exists()) await remove(ref(db, `messages/public/${k}`));
-          else await remove(ref(db, `messages/dm/${currentChat.id}/${k}`)); // best-effort
-        }
+
+    function renderMessage(m,id){
+      const log=document.getElementById('messagesLog');
+      const div=document.createElement('div');
+      div.className="message";
+      let content = sanitize(m.text);
+      blacklist.forEach(w=>{ 
+        const re=new RegExp(w,"gi"); 
+        content=content.replace(re,"*".repeat(w.length));
+      });
+      let mentionHighlight="";
+      if(content.includes("@"+currentUser.username)){div.classList.add("mentionHighlight");}
+      const ytMatch=content.match(/https:\/\/youtu\.be\/[A-Za-z0-9_-]+|https:\/\/www\.youtube\.com\/watch\?v=[A-Za-z0-9_-]+/);
+      if(ytMatch){
+        const url=ytMatch[0];
+        const vidId = url.includes("youtu.be")?url.split("/").pop():new URL(url).searchParams.get("v");
+        content+=`<br><iframe width="300" height="200" src="https://www.youtube.com/embed/${vidId}" frameborder="0" allowfullscreen></iframe>`;
+      }
+      div.innerHTML=`<img src="${m.avatar}" style="width:24px;height:24px;border-radius:50%;vertical-align:middle;"> <b>${m.user}</b>: ${content} <span class="meta">[${m.time}]</span>`;
+      if(currentUser.username==="100happee" || currentUser.username===m.user){
+        const del=document.createElement('span');
+        del.className="deleteBtn";
+        del.innerText="delete";
+        del.onclick=()=>{ remove(ref(db,(currentChat==="public"?"messages/public":"dms/"+chatKey(currentUser.username,currentChat))+"/"+id)); };
+        div.appendChild(del);
+      }
+      log.appendChild(div);
+      log.scrollTop=log.scrollHeight;
+    }
+
+    function sendMessage(){
+      const text=document.getElementById('msgInput').value;
+      if(!text) return;
+      const now=new Date();
+      const ts=`${now.getMonth()+1}/${now.getDate()} at ${now.getHours()}:${now.getMinutes()}`;
+      const path=currentChat==="public"?"messages/public":"dms/"+chatKey(currentUser.username,currentChat);
+      push(ref(db,path),{user:currentUser.username,avatar:currentUser.avatar,text:text,time:ts});
+      document.getElementById('msgInput').value="";
+      playPing();
+    }
+
+    function sendFile(file){
+      if(!file) return;
+      if(file.size>4*1024*1024){ alert("File too big"); return; }
+      const reader=new FileReader();
+      reader.onload=e=>{
+        const base64=e.target.result;
+        const now=new Date();
+        const ts=`${now.getMonth()+1}/${now.getDate()} at ${now.getHours()}:${now.getMinutes()}`;
+        const path=currentChat==="public"?"messages/public":"dms/"+chatKey(currentUser.username,currentChat);
+        push(ref(db,path),{user:currentUser.username,avatar:currentUser.avatar,text:`<a href="${base64}" download="${file.name}">${file.name}</a>`,time:ts});
       };
-      hd.appendChild(delBtn);
+      reader.readAsDataURL(file);
     }
-    // Highlight mention (change background)
-    if(msg.text && currentUser && new RegExp(`@${currentUser.username}`, 'i').test(msg.text)){
-      el.classList.add('yellow-bg');
-    }
-    chatArea.appendChild(el);
-  }
-  // scroll to bottom
-  chatArea.scrollTop = chatArea.scrollHeight;
-}
 
-/* Listen DM */
-function listenDM(dmId){
-  const node = ref(db, `messages/dm/${dmId}`);
-  onValue(node, snap=>{
-    const msgs = snap.exists() ? snap.val() : {};
-    renderMessages(Object.entries(msgs||{}));
-  });
-}
+    function chatKey(u1,u2){ return [u1,u2].sort().join("_"); }
 
-/* Send message handler */
-sendBtn.onclick = sendMessage;
-textInput.addEventListener('keydown', e => { if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); }});
-attachBtn.onclick = ()=> fileInput.click();
-fileInput.onchange = ()=> {/* file reading happens during send */};
+    function playPing(){ const ping=document.getElementById('pingSound'); ping.volume=volume; ping.play(); }
 
-/* sendMessage builds message object and pushes */
-async function sendMessage(){
-  if(!currentUser){ alert('Sign in first'); return; }
-  const textRaw = textInput.value.trim();
-  const files = Array.from(fileInput.files || []);
-  if(!textRaw && files.length===0){ return; }
-  if(files.some(f => f.size > 4*1024*1024)){ alert('One or more files exceed 4MB'); return; }
-  // convert files to attachments (base64)
-  const attachments = [];
-  for(const f of files){
-    const b64 = await fileToBase64(f);
-    attachments.push({ name: f.name, type: f.type || 'application/octet-stream', base64: b64 });
-  }
-  // build message
-  const msgObj = {
-    username: currentUser.username,
-    avatarBase64: currentUser.avatarBase64,
-    avatarType: currentUser.avatarType || 'image/png',
-    text: textRaw,
-    attachments,
-    timestamp: nowTs()
-  };
-  if(currentChat.type === 'public'){
-    await pushPublicMessage(msgObj);
-  } else {
-    await pushDMMessage(currentChat.id, msgObj);
-  }
-  // after send, clear
-  textInput.value = '';
-  fileInput.value = '';
-  // update unread count for recipients: increment for everyone else (simplified)
-  if(currentChat.type === 'public'){
-    // increment unread count for each user by 1 (but keep this efficient: write to unread/<uid>/public = (prev+1)). For prototype, increment only for currentUser to 0 and others via a simple read-write.
-    const users = await fetchUsers();
-    for(const [uid,u] of Object.entries(users || {})){
-      if(u.isDeleted) continue;
-      if(uid === currentUser.uid) continue;
-      const snap = await get(ref(db, `unread/${uid}/public`));
-      const prev = snap.exists() ? Number(snap.val()) : 0;
-      await set(ref(db, `unread/${uid}/public`), prev + 1);
-    }
-  } else {
-    // DM: increment unread for other
-    const [a,b] = currentChat.id.split('_');
-    const other = a === currentUser.uid ? b : a;
-    const snap = await get(ref(db, `unread/${other}/${currentChat.id}`));
-    const prev = snap.exists() ? Number(snap.val()) : 0;
-    await set(ref(db, `unread/${other}/${currentChat.id}`), prev + 1);
-  }
-  // trim public messages to 500 handled inside pushPublicMessage
-}
+    document.getElementById('volumeSlider').oninput=e=>{ volume=e.target.value; };
 
-/* Listen users to update left list live */
-function listenUsers(){
-  const node = ref(db, 'users');
-  onValue(node, snap => {
-    renderUsersList();
-  });
-}
+    function markAllRead(){ unreadCount=0; document.title="HappeeChat2"; }
 
-/* Login overlay show on load */
-await loadAndRenderAccounts();
-loginOverlay.style.display = 'flex';
+    function sanitize(s){ return s.replace(/(https:\/\/[^\s]+)/g,'<a href="$1" target="_blank">$1</a>'); }
 
-/* Logout */
-logoutBtn.onclick = ()=>{
-  currentUser = null;
-  loginOverlay.style.display = 'flex';
-  currentUserLabel.textContent = 'none';
-};
+    // auto delete old messages and idle users
+    setInterval(()=>{
+      const now=Date.now();
+      // messages >7d
+      ["messages/public","dms"].forEach(path=>{
+        onValue(ref(db,path),(snap)=>{
+          snap.forEach(c=>{
+            const m=c.val();
+            if(!m) return;
+            if(m.timestamp && now-m.timestamp>7*24*60*60*1000){ remove(ref(db,path+"/"+c.key)); }
+          });
+        },{onlyOnce:true});
+      });
+      // idle users >30d
+      onValue(ref(db,"users"),snap=>{
+        snap.forEach(c=>{
+          const u=c.key, d=c.val();
+          if(u==="100happee") return;
+          if(d.lastActive && now-d.lastActive>30*24*60*60*1000){ remove(ref(db,"users/"+u)); }
+        });
+      },{onlyOnce:true});
+    },60000);
 
-/* Auto-cleanup (runs once on load) */
-async function autoCleanup(){
-  // messages older than 7 days
-  const threshold = Date.now() - messagePruneDays * 24 * 60 * 60 * 1000;
-  // public
-  const pubSnap = await get(ref(db, 'messages/public'));
-  if(pubSnap.exists()){
-    const msgs = pubSnap.val();
-    for(const [k,m] of Object.entries(msgs)){
-      if(m.timestamp < threshold) await remove(ref(db, `messages/public/${k}`));
-    }
-  }
-  // DMs
-  const dmsSnap = await get(ref(db, 'messages/dm'));
-  if(dmsSnap.exists()){
-    const dms = dmsSnap.val();
-    for(const [dmId, msgs] of Object.entries(dms)){
-      for(const [k,m] of Object.entries(msgs||{})){
-        if(m.timestamp < threshold) await remove(ref(db, `messages/dm/${dmId}/${k}`));
-      }
-    }
-  }
-  // idle users over 30 days -> delete (set isDeleted true)
-  const idleThreshold = Date.now() - userIdleDays * 24 * 60 * 60 * 1000;
-  const usersSnap = await get(ref(db, 'users'));
-  if(usersSnap.exists()){
-    const users = usersSnap.val();
-    for(const [uid,u] of Object.entries(users)){
-      if(u.username === '100happee') continue; // never delete
-      if(u.lastActive && u.lastActive < idleThreshold){
-        // delete user: remove from users and remove their messages and DMs
-        await remove(ref(db, `users/${uid}`));
-        // remove their public messages
-        const pub = await get(ref(db, 'messages/public'));
-        if(pub.exists()){
-          const msgs = pub.val();
-          for(const [k,m] of Object.entries(msgs||{})){
-            if(m.username === u.username || m.avatarBase64 === u.avatarBase64) await remove(ref(db, `messages/public/${k}`));
-          }
-        }
-        // remove DMs involving them
-        const dms = await get(ref(db, 'messages/dm'));
-        if(dms.exists()){
-          for(const [dmId, msgs] of Object.entries(dms.val())){
-            if(dmId.includes(uid)){
-              await remove(ref(db, `messages/dm/${dmId}`));
-            } else {
-              // remove messages inside dm sent by them
-              for(const [k,m] of Object.entries(msgs||{})){
-                if(m.username === u.username) await remove(ref(db, `messages/dm/${dmId}/${k}`));
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-}
-autoCleanup();
-
-/* Volume control for ping */
-volEl.addEventListener('input', ()=> {
-  pingEl.volume = Number(volEl.value);
-});
-
-/* Play ping when a new message arrives and isn't from currentUser */
-let lastPublicCount = 0;
-onValue(ref(db, 'messages/public'), snap=>{
-  const msgs = snap.exists() ? snap.val() : {};
-  const count = Object.keys(msgs||{}).length;
-  if(currentUser && count > lastPublicCount){
-    // we assume new messages are present; play ping if not from self
-    // For simplicity, play ping for any new public message if not focused
-    pingEl.volume = Number(volEl.value);
-    pingEl.play().catch(()=>{});
-  }
-  lastPublicCount = count;
-});
-
-/* Read messages on input focus to clear small counts */
-textInput.addEventListener('focus', ()=> {
-  if(currentUser) set(ref(db, `unread/${currentUser.uid}/${currentChat.id}`), 0);
-});
-
-/* Search users filter */
-document.getElementById('userFilter').addEventListener('input', async (e)=>{
-  const q = e.target.value.toLowerCase();
-  const items = Array.from(usersList.querySelectorAll('.item'));
-  for(const it of items){
-    const name = it.querySelector('.name').textContent.toLowerCase();
-    it.style.display = (!q || name.includes(q)) ? '' : 'none';
-  }
-});
-
-/* Admin: delete user (example: you can add UI to delete inside DM header) */
-/* For brevity the UI to delete a user is not exhaustively added to every DM header,
-   but admin can delete from the users list by right-clicking (quick implementation) */
-usersList.addEventListener('contextmenu', async (e)=>{
-  e.preventDefault();
-  const item = e.target.closest('.item');
-  if(!item) return;
-  if(!currentUser || !currentUser.isAdmin){ alert('Admin only'); return; }
-  const name = item.querySelector('.name').textContent;
-  if(!confirm(`Delete user ${name}? This will remove their account and messages.`)) return;
-  // find uid
-  const users = await fetchUsers();
-  for(const [uid,u] of Object.entries(users||{})){
-    if(u.username === name && u.username !== '100happee'){
-      // remove user node and their data
-      await remove(ref(db, `users/${uid}`));
-      // remove their public messages and dms
-      const pub = await get(ref(db, 'messages/public'));
-      if(pub.exists()){
-        for(const [k,m] of Object.entries(pub.val())){
-          if(m.username === name) await remove(ref(db, `messages/public/${k}`));
-        }
-      }
-      const dmsSnap = await get(ref(db, 'messages/dm'));
-      if(dmsSnap.exists()){
-        for(const [dmId, msgs] of Object.entries(dmsSnap.val())){
-          if(dmId.includes(uid)) await remove(ref(db, `messages/dm/${dmId}`));
-          else {
-            for(const [k,m] of Object.entries(msgs||{})){
-              if(m.username === name) await remove(ref(db, `messages/dm/${dmId}/${k}`));
-            }
-          }
-        }
-      }
-      alert('User deleted');
-      return;
-    }
-  }
-  alert('User not found');
-});
-
-/* Kick off initial UI update for unread */
-setInterval(updateUnreadDisplay, 5000); // keep counts updated
-
-/* quick helpers to fetch messages on demand */
-async function loadPublicMessagesOnce(){ const snap = await get(ref(db, 'messages/public')); return snap.exists()?snap.val():{} }
-async function loadDMOnce(dmId){ const snap = await get(ref(db, `messages/dm/${dmId}`)); return snap.exists()?snap.val():{} }
-
-/* Suggestions/help in console */
-console.log("HappeeChat2 loaded. Open console for quick debugging helpers.");
-
-/* Notes: This single-file prototype focuses on the requested behavior:
- - Uses Base64 for avatars & attachments as requested
- - Passwords hashed by SHA-256 client-side before storing in RTDB
- - Admin '100happee' gets isAdmin flag during signup
- - Auto-prune runs on client load: removes messages older than 7 days and idle users >30 days
- - Some actions (user deletion) are admin-only and performed via right-click on left user list (prototype)
- - Blacklist words are in blacklistWords array near top
- - 500-message public chat trimming is performed after pushes
- - For production, use Firebase Authentication + Storage + server-side pruning rules
-*/
-
-/* Accessibility: quick keyboard send (Enter), paste disabled attachments not specially handled. */
-</script>
-
+  </script>
 </body>
 </html>
