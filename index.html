@@ -4,76 +4,88 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HappeeChat2</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="icon" href="https://i1.sndcdn.com/avatars-V22Gw2FsnsI9xMuU-ihNrRA-t240x240.jpg">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 <style>
-  body {
-    margin: 0;
-    font-family: 'Poppins', sans-serif;
-    background-color: #121212;
-    color: #eee;
-    overflow: hidden;
-  }
-  #loginScreen, #chatScreen { position: absolute; top:0; left:0; width:100%; height:100%; }
-  #loginScreen { display:flex; align-items:center; justify-content:center; flex-direction:column; background-color:#1e1e1e; z-index:10; }
-  .account { display:flex; align-items:center; margin:5px; cursor:pointer; padding:5px; border-radius:5px; background:#2c2c2c; }
-  .account img { width:40px; height:40px; border-radius:50%; margin-right:10px; }
-  .btn { padding:5px 10px; margin:5px; cursor:pointer; border:none; border-radius:5px; font-weight:600; }
-  .btn:hover { opacity:0.8; }
-  #chatScreen { display:flex; height:100%; }
-  #sidebar { width:200px; background:#1b1b1b; display:flex; flex-direction:column; padding:5px; overflow-y:auto; }
-  #sidebar .chatOption { display:flex; align-items:center; padding:5px; margin:2px 0; cursor:pointer; border-radius:5px; background:#2a2a2a; }
-  #sidebar .chatOption:hover { background:#3a3a3a; }
-  #sidebar .chatOption img { width:30px; height:30px; border-radius:50%; margin-right:10px; }
-  #chatArea { flex:1; display:flex; flex-direction:column; background:#121212; }
-  #messages { flex:1; overflow-y:auto; padding:10px; }
-  .message { margin:5px 0; padding:5px; border-radius:5px; }
-  .message:hover { background:#1f1f1f; }
-  .message .username { font-weight:600; margin-right:5px; }
-  .message .timestamp { font-size:0.7em; color:#aaa; margin-left:5px; }
-  #inputArea { display:flex; padding:5px; background:#1b1b1b; }
-  #inputArea input[type=text] { flex:1; padding:5px; border:none; border-radius:5px; margin-right:5px; }
-  #inputArea button { padding:5px 10px; border:none; border-radius:5px; cursor:pointer; }
-  .mention { color:#3399ff; font-weight:600; }
-  .highlight { background:#d1a800; }
-  a { color:#3399ff; text-decoration:none; }
-  a:hover { text-decoration:underline; }
-  #volumeControl { position:absolute; top:5px; right:5px; }
-  #readMessagesBtn { position:absolute; top:5px; left:210px; }
+  /* Basic reset */
+  * {margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+  body {background:#121212;color:#eee;overflow:hidden;}
+  .hidden{display:none;}
+  /* Login screen */
+  #loginScreen {position:absolute;top:0;left:0;width:100%;height:100%;background:#1e1e1e;display:flex;justify-content:center;align-items:center;flex-direction:row;gap:50px;padding:20px;}
+  #existingUsers, #createAccount {background:#2a2a2a;padding:20px;border-radius:12px;width:300px;height:80%;overflow-y:auto;}
+  #existingUsers h2,#createAccount h2{margin-bottom:10px;text-align:center;}
+  .userCard {display:flex;align-items:center,gap:10px;padding:5px;margin:5px 0;background:#333;border-radius:8px;cursor:pointer;}
+  .userCard img {width:40px;height:40px;border-radius:50%;}
+  .userCard span {margin-left:10px;}
+  /* Chat UI */
+  #chatUI {display:flex;height:100vh;width:100vw;}
+  #leftBar {width:80px;background:#1f1f1f;padding:10px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;}
+  #leftBar button {width:60px;height:60px;border:none;border-radius:10px;background:#333;color:#fff;font-size:24px;cursor:pointer;position:relative;}
+  #leftBar button .unread {position:absolute;top:-5px;right:-5px;background:red;color:#fff;font-size:12px;border-radius:50%;padding:2px 5px;}
+  #mainChat {flex:1;display:flex;flex-direction:column;}
+  #messageList {flex:1;overflow-y:auto;padding:10px;}
+  .message {padding:5px 10px;margin-bottom:5px;border-radius:8px;display:flex;gap:10px;align-items:flex-start;transition:background 0.2s;}
+  .message:hover {background:#2a2a2a;}
+  .message .avatar {width:40px;height:40px;border-radius:50%;}
+  .message .content {flex:1;}
+  .message .content .username {font-weight:600;}
+  .message .content .timestamp {font-size:10px;color:#aaa;margin-left:5px;}
+  .message .content .text a{color:#4da3ff;text-decoration:underline;}
+  .message.mention{background:#555500;}
+  .message.mention .text .at{color:#3399ff;}
+  #messageInput {display:flex;padding:10px;background:#1e1e1e;}
+  #messageInput input[type=text]{flex:1;padding:10px;border-radius:8px;border:none;background:#333;color:#fff;margin-right:5px;}
+  #messageInput button{padding:10px;border:none;border-radius:8px;background:#4da3ff;color:#fff;cursor:pointer;}
+  #fileInput{display:none;}
+  #pingVolume {position:absolute;top:10px;right:10px;}
+  #readMessages{position:absolute;top:50px;right:10px;padding:5px 10px;background:#4da3ff;color:#fff;border:none;border-radius:8px;cursor:pointer;}
 </style>
 </head>
 <body>
 
+<!-- Login Screen -->
 <div id="loginScreen">
-  <h2>HappeeChat2 Login</h2>
-  <div id="accountsList"></div>
-  <button class="btn" id="createAccountBtn">Create New Account</button>
+  <div id="existingUsers">
+    <h2>Existing Users</h2>
+    <div id="userList"></div>
+  </div>
+  <div id="createAccount">
+    <h2>Create Account</h2>
+    <input type="text" id="newUsername" placeholder="Username"><br><br>
+    <input type="password" id="newPassword" placeholder="Password"><br><br>
+    <input type="file" id="newAvatar"><br><br>
+    <button id="createAccountBtn">Create Account</button>
+  </div>
 </div>
 
-<div id="chatScreen" style="display:none;">
-  <div id="sidebar">
-    <div class="chatOption" data-chat="public"><span>#</span> Public Chat <span id="publicUnread" style="margin-left:auto;"></span></div>
+<!-- Chat UI -->
+<div id="chatUI" class="hidden">
+  <div id="leftBar">
+    <button id="publicChatBtn">#<span class="unread hidden" id="publicUnread">0</span></button>
     <div id="dmList"></div>
   </div>
-  <div id="chatArea">
-    <div id="messages"></div>
-    <div id="inputArea">
-      <button id="addFileBtn">+</button>
-      <input type="text" id="messageInput" placeholder="Type a message...">
-      <button id="sendBtn">Send Message</button>
+  <div id="mainChat">
+    <div id="messageList"></div>
+    <div id="messageInput">
+      <button id="fileBtn">+</button>
+      <input type="text" id="messageText" placeholder="Type a message">
+      <button id="sendMessageBtn">Send</button>
+      <input type="file" id="fileInput">
     </div>
   </div>
-  <input type="range" min="0" max="1" step="0.01" id="volumeControl" title="Ping Volume">
-  <button id="readMessagesBtn">Read Messages</button>
 </div>
 
-<audio id="pingSound" src="ping.mp3" preload="auto"></audio>
-<input type="file" id="fileInput" style="display:none;">
+<audio id="pingSound" src="ping.mp3"></audio>
+<input type="range" id="pingVolume" min="0" max="1" step="0.01" value="0.5">
+<button id="readMessages">Read Messages</button>
 
+<!-- Firebase -->
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.1/firebase-app.js";
-import { getDatabase, ref, set, get, child, push, onChildAdded, remove, update, query, orderByChild } from "https://www.gstatic.com/firebasejs/10.6.1/firebase-database.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-app.js";
+import { getDatabase, ref, set, push, onValue, remove, get } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-database.js";
 
+// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyDkpDlINFiUzR0PsFRcxxk-N2fhHLnpACI",
   authDomain: "hchat2-1d004.firebaseapp.com",
@@ -83,136 +95,180 @@ const firebaseConfig = {
   messagingSenderId: "807685526215",
   appId: "1:807685526215:web:6b9042099ff0b464be24e2"
 };
-
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
+// State
 let currentUser = null;
 let currentChat = 'public';
-let unreadCounts = {};
-const blacklist = ["badword1", "badword2"]; // replace with your words
+let users = {};
+let blacklist = ['badword']; // add words here
+let messageLimit = 500;
 
+// Utilities
+function escapeHTML(text){return text.replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m];});}
+function replaceBlacklist(text){let r=text;blacklist.forEach(w=>{let re=new RegExp('\\b'+w+'\\b','gi');r=r.replace(re,'*'.repeat(w.length));});return r;}
+function formatTime(ts){let d=new Date(ts);let h=d.getHours()%12||12;let ampm=d.getHours()>=12?'p':'a';return `[${d.getMonth()+1}/${d.getDate()} at ${h}:${d.getMinutes().toString().padStart(2,'0')}${ampm}]`;}
+
+// Login
+const userListDiv = document.getElementById('userList');
+const dmListDiv = document.getElementById('dmList');
 const loginScreen = document.getElementById('loginScreen');
-const chatScreen = document.getElementById('chatScreen');
-const accountsList = document.getElementById('accountsList');
-const dmList = document.getElementById('dmList');
-const messagesDiv = document.getElementById('messages');
-const messageInput = document.getElementById('messageInput');
-const sendBtn = document.getElementById('sendBtn');
-const addFileBtn = document.getElementById('addFileBtn');
-const fileInput = document.getElementById('fileInput');
-const pingSound = document.getElementById('pingSound');
-const volumeControl = document.getElementById('volumeControl');
-const readMessagesBtn = document.getElementById('readMessagesBtn');
-const publicUnread = document.getElementById('publicUnread');
+const chatUI = document.getElementById('chatUI');
 
-volumeControl.addEventListener('input', ()=>{ pingSound.volume = volumeControl.value; });
-
-function sanitize(text) {
-  let clean = text;
-  blacklist.forEach(word => { clean = clean.replaceAll(new RegExp(word,'gi'), '*'.repeat(word.length)); });
-  return clean;
+function loadUsers(){
+  const usersRef = ref(db,'users/');
+  onValue(usersRef,(snapshot)=>{
+    users = snapshot.val()||{};
+    renderUserList();
+    renderDMList();
+  });
+}
+function renderUserList(){
+  userListDiv.innerHTML='';
+  Object.keys(users).forEach(u=>{
+    const user=users[u];
+    if(user.deleted) return;
+    const div=document.createElement('div');
+    div.className='userCard';
+    div.innerHTML=`<img src="${user.avatar||'https://i.pravatar.cc/40'}"><span>${u}</span>`;
+    div.onclick=()=>loginPrompt(u);
+    userListDiv.appendChild(div);
+  });
+}
+function loginPrompt(username){
+  const pass=prompt('Enter password for '+username);
+  if(!pass) return;
+  const stored=users[username].password;
+  if(stored===pass){
+    currentUser=username;
+    loginScreen.classList.add('hidden');
+    chatUI.classList.remove('hidden');
+    loadMessages();
+  }else{
+    alert('Incorrect password');
+  }
 }
 
-function renderAccounts(accounts) {
-  accountsList.innerHTML = '';
-  Object.keys(accounts).forEach(name => {
-    const div = document.createElement('div');
-    div.className = 'account';
-    const img = document.createElement('img');
-    img.src = accounts[name].avatar || 'https://i1.sndcdn.com/avatars-V22Gw2FsnsI9xMuU-ihNrRA-t240x240.jpg';
-    div.appendChild(img);
-    div.appendChild(document.createTextNode(name));
-    div.onclick = ()=>{ loginPrompt(name, accounts[name]); };
-    accountsList.appendChild(div);
+// Create account
+document.getElementById('createAccountBtn').onclick=async()=>{
+  const u=document.getElementById('newUsername').value.trim();
+  const p=document.getElementById('newPassword').value;
+  if(!u||!p){alert('Username/password required');return;}
+  if(users[u]){alert('Username exists');return;}
+  let avatar=null;
+  const file=document.getElementById('newAvatar').files[0];
+  if(file){
+    avatar=await fileToBase64(file);
+  }
+  set(ref(db,'users/'+u),{password:p,avatar:avatar,lastActive:Date.now()});
+  document.getElementById('newUsername').value='';document.getElementById('newPassword').value='';
+  document.getElementById('newAvatar').value='';
+};
+
+// File to Base64
+function fileToBase64(file){
+  return new Promise((res,rej)=>{
+    const reader=new FileReader();
+    reader.onload=()=>res(reader.result);
+    reader.onerror=err=>rej(err);
+    reader.readAsDataURL(file);
   });
 }
 
-async function loadAccounts() {
-  const snapshot = await get(child(ref(db), 'users'));
-  if(snapshot.exists()) renderAccounts(snapshot.val());
-}
+// Messaging
+const messageList = document.getElementById('messageList');
+const msgInput = document.getElementById('messageText');
+const sendBtn = document.getElementById('sendMessageBtn');
+const fileInput = document.getElementById('fileInput');
+const fileBtn = document.getElementById('fileBtn');
+const pingSound = document.getElementById('pingSound');
+const pingVolume = document.getElementById('pingVolume');
 
-function loginPrompt(name, data){
-  const pw = prompt("Enter password for " + name);
-  if(pw === data.password){
-    currentUser = {name, avatar:data.avatar, isAdmin:name==='100happee'};
-    loginScreen.style.display = 'none';
-    chatScreen.style.display = 'flex';
-    loadChats();
-  } else { alert("Wrong password"); }
-}
+pingVolume.oninput=()=>pingSound.volume=pingVolume.value;
+fileBtn.onclick=()=>fileInput.click();
 
-document.getElementById('createAccountBtn').onclick = async ()=>{
-  const username = prompt("Enter new username:");
-  if(!username) return;
-  const pw = prompt("Enter password:");
-  if(!pw) return;
-  const file = prompt("Enter avatar as Base64 (optional):") || '';
-  const snapshot = await get(child(ref(db), 'users'));
-  const users = snapshot.exists()?snapshot.val():{};
-  if(users[username]){ alert("Username taken"); return; }
-  await set(ref(db,'users/'+username),{password:pw,avatar:file,lastActive:Date.now()});
-  loadAccounts();
-};
+sendBtn.onclick=sendMessage;
+msgInput.addEventListener('keypress',e=>{if(e.key==='Enter') sendMessage();});
 
-function renderMessage(msg){
-  const div = document.createElement('div');
-  div.className = 'message';
-  if(msg.mentions && msg.mentions.includes(currentUser.name)){ div.classList.add('highlight'); }
-  const userSpan = document.createElement('span'); userSpan.className='username'; userSpan.textContent=msg.username;
-  const tsSpan = document.createElement('span'); tsSpan.className='timestamp'; tsSpan.textContent='['+new Date(msg.timestamp).toLocaleString()+']';
-  let content = sanitize(msg.text);
-  // handle mentions and links
-  content = content.replace(/@(\w+)/g, '<span class="mention">@$1</span>');
-  content = content.replace(/https:\/\/[^\s]+/g, (link)=>`<a href="${link}" target="_blank">${link}</a>`);
-  div.innerHTML += content;
-  div.prepend(userSpan); div.appendChild(tsSpan);
-  if(msg.file){
-    let f;
-    if(msg.fileType.startsWith('image/')){
-      f=document.createElement('img'); f.src=msg.file; f.style.maxWidth='200px';
-    } else if(msg.fileType.startsWith('video/')){
-      f=document.createElement('video'); f.src=msg.file; f.controls=true; f.style.maxWidth='200px';
-    } else if(msg.fileType.startsWith('audio/')){
-      f=document.createElement('audio'); f.src=msg.file; f.controls=true;
-    } else { f=document.createElement('a'); f.href=msg.file; f.download='file'; f.textContent='Download '+msg.fileName; }
-    div.appendChild(f);
+async function sendMessage(){
+  let text=msgInput.value.trim();
+  if(!text && !fileInput.files.length) return;
+  text=replaceBlacklist(text);
+  let attachments=[];
+  for(const f of fileInput.files){
+    if(f.size>4*1024*1024){alert('File too big');continue;}
+    attachments.push({name:f.name,data:await fileToBase64(f)});
   }
-  messagesDiv.appendChild(div);
-  messagesDiv.scrollTop = messagesDiv.scrollHeight;
-  pingSound.play();
+  const msg={sender:currentUser,text,text,timestamp:Date.now(),attachments};
+  push(ref(db,'messages/'+currentChat),msg);
+  msgInput.value='';fileInput.value='';
 }
 
-async function loadChats(){
+// Load messages
+function loadMessages(){
   const msgsRef = ref(db,'messages/'+currentChat);
-  onChildAdded(msgsRef, snapshot=>{ renderMessage(snapshot.val()); });
+  onValue(msgsRef,(snapshot)=>{
+    const msgs=snapshot.val()||{};
+    messageList.innerHTML='';
+    const sorted = Object.values(msgs).sort((a,b)=>a.timestamp-b.timestamp).slice(-messageLimit);
+    sorted.forEach(m=>{
+      const div=document.createElement('div');
+      div.className='message';
+      if(m.text.includes('@'+currentUser)) div.classList.add('mention');
+      let attachmentsHTML='';
+      m.attachments?.forEach(a=>{
+        if(a.data.startsWith('data:image')) attachmentsHTML+=`<img src="${a.data}" style="max-width:200px;display:block;margin-top:5px;">`;
+        else if(a.data.startsWith('data:video')) attachmentsHTML+=`<video controls src="${a.data}" style="max-width:200px;margin-top:5px;"></video>`;
+        else if(a.data.startsWith('data:audio')) attachmentsHTML+=`<audio controls src="${a.data}" style="margin-top:5px;"></audio>`;
+        else attachmentsHTML+=`<a href="${a.data}" download="${a.name}">${a.name}</a>`;
+      });
+      let textWithLinks = m.text.replace(/https:\/\/[^\s]+/g,link=>`<a href="${link}" target="_blank">${link}</a>`);
+      textWithLinks=textWithLinks.replace(/@(\w+)/g,'<span class="at">@$1</span>');
+      div.innerHTML=`<img class="avatar" src="${users[m.sender]?.avatar||'https://i.pravatar.cc/40'}">
+      <div class="content"><span class="username">${m.sender}</span> <span class="timestamp">${formatTime(m.timestamp)}</span>
+      <div class="text">${textWithLinks}${attachmentsHTML}</div></div>`;
+      messageList.appendChild(div);
+    });
+    messageList.scrollTop=messageList.scrollHeight;
+    pingSound.play();
+  });
 }
 
-sendBtn.onclick = async ()=>{
-  const text = messageInput.value.trim(); if(!text) return;
-  let fileData = null, fileType='', fileName='';
-  const msg = {username:currentUser.name,text,file:fileData,fileType,fileName,timestamp:Date.now(),mentions:[]};
-  // detect mentions
-  const mentionMatches = text.match(/@(\w+)/g);
-  if(mentionMatches){ msg.mentions = mentionMatches.map(m=>m.substring(1)); }
-  const newRef = push(ref(db,'messages/'+currentChat));
-  await set(newRef,msg);
-  messageInput.value='';
-};
+// DMs
+function renderDMList(){
+  dmListDiv.innerHTML='';
+  Object.keys(users).forEach(u=>{
+    if(u===currentUser || users[u].deleted) return;
+    const btn=document.createElement('button');
+    btn.textContent=u[0].toUpperCase();
+    btn.onclick=()=>{currentChat='dm_'+[currentUser,u].sort().join('_');loadMessages();};
+    dmListDiv.appendChild(btn);
+  });
+}
 
-addFileBtn.onclick=()=>fileInput.click();
-fileInput.onchange=()=>{
-  const file = fileInput.files[0];
-  if(file && file.size<=4*1024*1024){
-    const reader = new FileReader();
-    reader.onload = ()=>{ messageInput.value += '\n[File attached]'; };
-    reader.readAsDataURL(file);
-  } else alert("File too large or not selected");
-};
+// Read messages
+document.getElementById('readMessages').onclick=()=>document.title='HappeeChat2';
 
-loadAccounts();
+// Auto deletion
+setInterval(()=>{
+  const now=Date.now();
+  Object.entries(users).forEach(([u,d])=>{
+    if(d.deleted) return;
+    if(now-d.lastActive>30*24*3600*1000 && u!=='100happee'){remove(ref(db,'users/'+u));}
+  });
+  ['public',...Object.keys(users).filter(u=>u!==currentUser).map(u=>'dm_'+[currentUser,u].sort().join('_'))].forEach(chat=>{
+    const chatRef = ref(db,'messages/'+chat);
+    get(chatRef).then(snapshot=>{
+      const msgs=snapshot.val()||{};
+      Object.entries(msgs).forEach(([k,m])=>{
+        if(now-m.timestamp>7*24*3600*1000) remove(ref(db,'messages/'+chat+'/'+k));
+      });
+    });
+  });
+},60*1000); // every 1 min
+
+loadUsers();
 </script>
-
 </body>
 </html>
