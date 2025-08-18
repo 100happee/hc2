@@ -4,228 +4,75 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HappeeChat2</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="https://i1.sndcdn.com/avatars-V22Gw2FsnsI9xMuU-ihNrRA-t240x240.jpg">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 <style>
-body {
+  body {
     margin: 0;
     font-family: 'Poppins', sans-serif;
-    background-color: #1e1e1e;
-    color: #fff;
-}
-#loginScreen, #chatScreen {
-    width: 100%;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: absolute;
-    top: 0; left: 0;
-}
-#loginScreen {
-    background-color: rgba(0,0,0,0.95);
-    flex-direction: column;
-}
-.accountList {
-    display: flex;
-    flex-direction: column;
-    margin: 10px 0;
-}
-.account {
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    margin: 5px 0;
-    padding: 5px;
-    background-color: #2c2c2c;
-    border-radius: 5px;
-}
-.account img {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    margin-right: 10px;
-}
-#createAccountBtn {
-    margin-top: 15px;
-    padding: 10px 20px;
-    background-color: #4da3ff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    color: #fff;
-    font-weight: 600;
-}
-#chatScreen {
-    display: none;
-}
-#leftBar {
-    width: 220px;
-    background-color: #2c2c2c;
-    display: flex;
-    flex-direction: column;
-    padding: 10px;
-    overflow-y: auto;
-}
-.chatOption {
-    display: flex;
-    align-items: center;
-    padding: 10px;
-    margin: 5px 0;
-    cursor: pointer;
-    border-radius: 5px;
-}
-.chatOption:hover {
-    background-color: #3a3a3a;
-}
-.chatOption img, .chatOption .icon {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    margin-right: 10px;
-}
-.icon {
-    font-size: 24px;
-    text-align: center;
-    line-height: 30px;
-}
-.unreadCounter {
-    background-color: #ff3f3f;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-size: 12px;
-    margin-left: auto;
-}
-#mainChat {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    background-color: #1e1e1e;
-}
-#messageList {
-    flex: 1;
-    overflow-y: auto;
-    padding: 10px;
-}
-.message {
-    display: flex;
-    margin-bottom: 10px;
-    padding: 5px;
-    border-radius: 5px;
-}
-.message:hover {
-    background-color: #2a2a2a;
-}
-.message img.avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    margin-right: 10px;
-}
-.messageContent {
-    display: flex;
-    flex-direction: column;
-}
-.messageContent .username {
-    font-weight: 600;
-}
-.messageContent .text {
-    margin: 2px 0;
-}
-.messageContent .timestamp {
-    font-size: 10px;
-    color: #888;
-}
-#messageBar {
-    display: flex;
-    padding: 10px;
-    background-color: #2c2c2c;
-}
-#messageInput {
-    flex: 1;
-    padding: 10px;
-    border: none;
-    border-radius: 5px;
-    margin-right: 5px;
-    background-color: #1e1e1e;
-    color: #fff;
-}
-#sendMessageBtn, #fileBtn {
-    padding: 10px 15px;
-    margin-left: 5px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-#sendMessageBtn {
-    background-color: #4da3ff;
-    color: #fff;
-}
-#fileBtn {
-    background-color: #666;
-    color: #fff;
-}
-#topRightControls {
-    display: flex;
-    align-items: center;
-    padding: 5px 10px;
-}
-#pingVolume {
-    margin-left: 10px;
-}
-.dmHeader {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 5px 10px;
-    background-color: #2c2c2c;
-    border-bottom: 1px solid #444;
-}
-.dmHeader button {
-    background-color: #ff3f3f;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    padding: 5px 10px;
-    cursor: pointer;
-}
+    background-color: #121212;
+    color: #eee;
+    overflow: hidden;
+  }
+  #loginScreen, #chatScreen { position: absolute; top:0; left:0; width:100%; height:100%; }
+  #loginScreen { display:flex; align-items:center; justify-content:center; flex-direction:column; background-color:#1e1e1e; z-index:10; }
+  .account { display:flex; align-items:center; margin:5px; cursor:pointer; padding:5px; border-radius:5px; background:#2c2c2c; }
+  .account img { width:40px; height:40px; border-radius:50%; margin-right:10px; }
+  .btn { padding:5px 10px; margin:5px; cursor:pointer; border:none; border-radius:5px; font-weight:600; }
+  .btn:hover { opacity:0.8; }
+  #chatScreen { display:flex; height:100%; }
+  #sidebar { width:200px; background:#1b1b1b; display:flex; flex-direction:column; padding:5px; overflow-y:auto; }
+  #sidebar .chatOption { display:flex; align-items:center; padding:5px; margin:2px 0; cursor:pointer; border-radius:5px; background:#2a2a2a; }
+  #sidebar .chatOption:hover { background:#3a3a3a; }
+  #sidebar .chatOption img { width:30px; height:30px; border-radius:50%; margin-right:10px; }
+  #chatArea { flex:1; display:flex; flex-direction:column; background:#121212; }
+  #messages { flex:1; overflow-y:auto; padding:10px; }
+  .message { margin:5px 0; padding:5px; border-radius:5px; }
+  .message:hover { background:#1f1f1f; }
+  .message .username { font-weight:600; margin-right:5px; }
+  .message .timestamp { font-size:0.7em; color:#aaa; margin-left:5px; }
+  #inputArea { display:flex; padding:5px; background:#1b1b1b; }
+  #inputArea input[type=text] { flex:1; padding:5px; border:none; border-radius:5px; margin-right:5px; }
+  #inputArea button { padding:5px 10px; border:none; border-radius:5px; cursor:pointer; }
+  .mention { color:#3399ff; font-weight:600; }
+  .highlight { background:#d1a800; }
+  a { color:#3399ff; text-decoration:none; }
+  a:hover { text-decoration:underline; }
+  #volumeControl { position:absolute; top:5px; right:5px; }
+  #readMessagesBtn { position:absolute; top:5px; left:210px; }
 </style>
 </head>
 <body>
 
 <div id="loginScreen">
-    <h1>HappeeChat2 Login</h1>
-    <div class="accountList" id="existingAccounts"></div>
-    <button id="createAccountBtn">Create New Account</button>
+  <h2>HappeeChat2 Login</h2>
+  <div id="accountsList"></div>
+  <button class="btn" id="createAccountBtn">Create New Account</button>
 </div>
 
-<div id="chatScreen">
-    <div id="leftBar">
-        <div class="chatOption" id="publicChat"><span class="icon">#</span> Public Chat <span class="unreadCounter" id="publicUnread">0</span></div>
-        <div id="dmUsers"></div>
+<div id="chatScreen" style="display:none;">
+  <div id="sidebar">
+    <div class="chatOption" data-chat="public"><span>#</span> Public Chat <span id="publicUnread" style="margin-left:auto;"></span></div>
+    <div id="dmList"></div>
+  </div>
+  <div id="chatArea">
+    <div id="messages"></div>
+    <div id="inputArea">
+      <button id="addFileBtn">+</button>
+      <input type="text" id="messageInput" placeholder="Type a message...">
+      <button id="sendBtn">Send Message</button>
     </div>
-    <div id="mainChat">
-        <div class="dmHeader">
-            <span id="dmTitle">Direct Message</span>
-            <button id="deleteUserBtn" style="display:none;">Delete User</button>
-        </div>
-        <div id="messageList"></div>
-        <div id="messageBar">
-            <button id="fileBtn">+</button>
-            <input type="text" id="messageInput" placeholder="Type a message...">
-            <button id="sendMessageBtn">Send Message</button>
-        </div>
-    </div>
-    <div id="topRightControls">
-        Ping Volume: <input type="range" id="pingVolume" min="0" max="1" step="0.01" value="0.5">
-    </div>
+  </div>
+  <input type="range" min="0" max="1" step="0.01" id="volumeControl" title="Ping Volume">
+  <button id="readMessagesBtn">Read Messages</button>
 </div>
 
-<audio id="pingSound" src="ping.mp3"></audio>
+<audio id="pingSound" src="ping.mp3" preload="auto"></audio>
+<input type="file" id="fileInput" style="display:none;">
 
 <script type="module">
-// Firebase setup
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-app.js";
-import { getDatabase, ref, set, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-database.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.1/firebase-app.js";
+import { getDatabase, ref, set, get, child, push, onChildAdded, remove, update, query, orderByChild } from "https://www.gstatic.com/firebasejs/10.6.1/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDkpDlINFiUzR0PsFRcxxk-N2fhHLnpACI",
@@ -236,114 +83,135 @@ const firebaseConfig = {
   messagingSenderId: "807685526215",
   appId: "1:807685526215:web:6b9042099ff0b464be24e2"
 };
+
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// Globals
 let currentUser = null;
-let currentDM = null;
-let usersData = {};
-let blacklist = ["badword1","badword2"]; // Example blacklist
+let currentChat = 'public';
+let unreadCounts = {};
+const blacklist = ["badword1", "badword2"]; // replace with your words
 
-// Login functions
-function showAccounts(accounts){
-    const list = document.getElementById("existingAccounts");
-    list.innerHTML = "";
-    for(let username in accounts){
-        const acc = document.createElement("div");
-        acc.classList.add("account");
-        acc.innerHTML = `<img src="${accounts[username].avatar || ''}" alt="avatar"><span>${username}</span>`;
-        acc.onclick = () => loginPrompt(username, accounts[username].password);
-        list.appendChild(acc);
-    }
+const loginScreen = document.getElementById('loginScreen');
+const chatScreen = document.getElementById('chatScreen');
+const accountsList = document.getElementById('accountsList');
+const dmList = document.getElementById('dmList');
+const messagesDiv = document.getElementById('messages');
+const messageInput = document.getElementById('messageInput');
+const sendBtn = document.getElementById('sendBtn');
+const addFileBtn = document.getElementById('addFileBtn');
+const fileInput = document.getElementById('fileInput');
+const pingSound = document.getElementById('pingSound');
+const volumeControl = document.getElementById('volumeControl');
+const readMessagesBtn = document.getElementById('readMessagesBtn');
+const publicUnread = document.getElementById('publicUnread');
+
+volumeControl.addEventListener('input', ()=>{ pingSound.volume = volumeControl.value; });
+
+function sanitize(text) {
+  let clean = text;
+  blacklist.forEach(word => { clean = clean.replaceAll(new RegExp(word,'gi'), '*'.repeat(word.length)); });
+  return clean;
 }
 
-function loginPrompt(username, correctPass){
-    const pass = prompt(`Enter password for ${username}`);
-    if(pass !== correctPass){
-        alert("Password incorrect");
-        return;
-    }
-    currentUser = username;
-    document.getElementById("loginScreen").style.display = "none";
-    document.getElementById("chatScreen").style.display = "flex";
-    loadChat();
+function renderAccounts(accounts) {
+  accountsList.innerHTML = '';
+  Object.keys(accounts).forEach(name => {
+    const div = document.createElement('div');
+    div.className = 'account';
+    const img = document.createElement('img');
+    img.src = accounts[name].avatar || 'https://i1.sndcdn.com/avatars-V22Gw2FsnsI9xMuU-ihNrRA-t240x240.jpg';
+    div.appendChild(img);
+    div.appendChild(document.createTextNode(name));
+    div.onclick = ()=>{ loginPrompt(name, accounts[name]); };
+    accountsList.appendChild(div);
+  });
 }
 
-function loadAccounts(){
-    const usersRef = ref(db, 'users');
-    onValue(usersRef, (snapshot)=>{
-        usersData = snapshot.val() || {};
-        showAccounts(usersData);
-    });
+async function loadAccounts() {
+  const snapshot = await get(child(ref(db), 'users'));
+  if(snapshot.exists()) renderAccounts(snapshot.val());
 }
 
-document.getElementById("createAccountBtn").onclick = ()=>{
-    const username = prompt("Choose a username");
-    if(usersData[username]){
-        alert("Username taken");
-        return;
-    }
-    const password = prompt("Choose a password");
-    const avatar = prompt("Optional avatar URL");
-    set(ref(db, 'users/'+username), {password, avatar: avatar || '', lastActive: Date.now()});
+function loginPrompt(name, data){
+  const pw = prompt("Enter password for " + name);
+  if(pw === data.password){
+    currentUser = {name, avatar:data.avatar, isAdmin:name==='100happee'};
+    loginScreen.style.display = 'none';
+    chatScreen.style.display = 'flex';
+    loadChats();
+  } else { alert("Wrong password"); }
+}
+
+document.getElementById('createAccountBtn').onclick = async ()=>{
+  const username = prompt("Enter new username:");
+  if(!username) return;
+  const pw = prompt("Enter password:");
+  if(!pw) return;
+  const file = prompt("Enter avatar as Base64 (optional):") || '';
+  const snapshot = await get(child(ref(db), 'users'));
+  const users = snapshot.exists()?snapshot.val():{};
+  if(users[username]){ alert("Username taken"); return; }
+  await set(ref(db,'users/'+username),{password:pw,avatar:file,lastActive:Date.now()});
+  loadAccounts();
+};
+
+function renderMessage(msg){
+  const div = document.createElement('div');
+  div.className = 'message';
+  if(msg.mentions && msg.mentions.includes(currentUser.name)){ div.classList.add('highlight'); }
+  const userSpan = document.createElement('span'); userSpan.className='username'; userSpan.textContent=msg.username;
+  const tsSpan = document.createElement('span'); tsSpan.className='timestamp'; tsSpan.textContent='['+new Date(msg.timestamp).toLocaleString()+']';
+  let content = sanitize(msg.text);
+  // handle mentions and links
+  content = content.replace(/@(\w+)/g, '<span class="mention">@$1</span>');
+  content = content.replace(/https:\/\/[^\s]+/g, (link)=>`<a href="${link}" target="_blank">${link}</a>`);
+  div.innerHTML += content;
+  div.prepend(userSpan); div.appendChild(tsSpan);
+  if(msg.file){
+    let f;
+    if(msg.fileType.startsWith('image/')){
+      f=document.createElement('img'); f.src=msg.file; f.style.maxWidth='200px';
+    } else if(msg.fileType.startsWith('video/')){
+      f=document.createElement('video'); f.src=msg.file; f.controls=true; f.style.maxWidth='200px';
+    } else if(msg.fileType.startsWith('audio/')){
+      f=document.createElement('audio'); f.src=msg.file; f.controls=true;
+    } else { f=document.createElement('a'); f.href=msg.file; f.download='file'; f.textContent='Download '+msg.fileName; }
+    div.appendChild(f);
+  }
+  messagesDiv.appendChild(div);
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  pingSound.play();
+}
+
+async function loadChats(){
+  const msgsRef = ref(db,'messages/'+currentChat);
+  onChildAdded(msgsRef, snapshot=>{ renderMessage(snapshot.val()); });
+}
+
+sendBtn.onclick = async ()=>{
+  const text = messageInput.value.trim(); if(!text) return;
+  let fileData = null, fileType='', fileName='';
+  const msg = {username:currentUser.name,text,file:fileData,fileType,fileName,timestamp:Date.now(),mentions:[]};
+  // detect mentions
+  const mentionMatches = text.match(/@(\w+)/g);
+  if(mentionMatches){ msg.mentions = mentionMatches.map(m=>m.substring(1)); }
+  const newRef = push(ref(db,'messages/'+currentChat));
+  await set(newRef,msg);
+  messageInput.value='';
+};
+
+addFileBtn.onclick=()=>fileInput.click();
+fileInput.onchange=()=>{
+  const file = fileInput.files[0];
+  if(file && file.size<=4*1024*1024){
+    const reader = new FileReader();
+    reader.onload = ()=>{ messageInput.value += '\n[File attached]'; };
+    reader.readAsDataURL(file);
+  } else alert("File too large or not selected");
 };
 
 loadAccounts();
-
-// Chat functionality
-const messageList = document.getElementById("messageList");
-const messageInput = document.getElementById("messageInput");
-const sendMessageBtn = document.getElementById("sendMessageBtn");
-const pingSound = document.getElementById("pingSound");
-const publicUnread = document.getElementById("publicUnread");
-
-function sanitizeMessage(msg){
-    blacklist.forEach(word=>{
-        const regex = new RegExp(word,"gi");
-        msg = msg.replace(regex, "*".repeat(word.length));
-    });
-    return msg;
-}
-
-function createMessageElement(username, avatar, text, timestamp){
-    const msgDiv = document.createElement("div");
-    msgDiv.classList.add("message");
-    msgDiv.innerHTML = `<img class="avatar" src="${avatar}" alt="avatar">
-    <div class="messageContent">
-        <span class="username">${username}</span>
-        <span class="text">${sanitizeMessage(text)}</span>
-        <span class="timestamp">${timestamp}</span>
-    </div>`;
-    return msgDiv;
-}
-
-sendMessageBtn.onclick = ()=>{
-    const text = messageInput.value.trim();
-    if(!text) return;
-    const timestamp = new Date().toLocaleString();
-    const msgRef = currentDM ? ref(db,'dms/'+currentDM) : ref(db,'public');
-    push(msgRef, {user: currentUser, text, timestamp});
-    messageInput.value = '';
-    pingSound.play();
-};
-
-function loadChat(){
-    // Load public messages
-    const publicRef = ref(db,'public');
-    onValue(publicRef,(snapshot)=>{
-        messageList.innerHTML = "";
-        const msgs = snapshot.val() || {};
-        let count = 0;
-        for(let id in msgs){
-            const msg = msgs[id];
-            const el = createMessageElement(msg.user, usersData[msg.user]?.avatar || '', msg.text, msg.timestamp);
-            messageList.appendChild(el);
-            count++;
-        }
-        publicUnread.textContent = count;
-    });
-}
 </script>
 
 </body>
