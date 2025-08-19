@@ -31,7 +31,27 @@
     overflow:hidden;
     box-shadow:0 10px 30px rgba(0,0,0,0.6);
   }
-  /* Middle column (only list now) */
+  /* Left column (now only small toolbar) */
+  .left {
+    width:88px;
+    background:var(--panel);
+    padding:12px 8px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    box-sizing:border-box;
+  }
+  .icon-btn {
+    width:64px;height:64px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.00));
+    border:1px solid rgba(255,255,255,0.03);
+    cursor:pointer;position:relative;overflow:hidden;
+  }
+  .icon-btn .badge {position:absolute;right:6px;top:6px;background:#ff6b6b;color:white;padding:2px 6px;border-radius:6px;font-size:11px}
+  .icon-btn img, .icon-btn .hash {width:42px;height:42px;border-radius:8px;object-fit:cover}
+  .icon-btn .hash {font-weight:700;color:var(--accent);font-size:34px}
+  .bottom-left {margin-top:auto;display:flex;flex-direction:column;gap:8px;align-items:center}
+  /* Middle column (users list / chats) */
   .middle {
     width:260px;
     background:var(--panel);
@@ -57,7 +77,6 @@
   .header {
     display:flex;align-items:center;gap:12px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.02);
   }
-  .header .title-wrap {display:flex;align-items:center;gap:8px}
   .header .title {font-size:18px;font-weight:700}
   .header .controls {margin-left:auto;display:flex;gap:8px;align-items:center}
   .btn {background:var(--accent);color:#06121a;padding:8px 12px;border-radius:8px;border:none;cursor:pointer;font-weight:600}
@@ -85,18 +104,18 @@
   .login-box{width:760px;background:linear-gradient(180deg,#07101a,#081218);padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,0.03);display:flex;gap:12px;box-sizing:border-box}
   .login-left{width:320px;padding:8px;display:flex;flex-direction:column;gap:8px}
   .account {display:flex;align-items:center;gap:8px;padding:8px;border-radius:8px;cursor:pointer}
-  .account:hover{background:rgba(255,255,255,0.02)}
   .account img{width:48px;height:48px;border-radius:8px;object-fit:cover}
   .create-form{flex:1;padding:8px;display:flex;flex-direction:column;gap:8px}
   input,button,select,textarea{font-family:inherit}
   .danger{background:#ff6b6b;color:white}
-  .admin-delete {background:#7b2634;color:#fff;padding:6px;border-radius:8px;border:none;cursor:pointer}
+  .admin-delete {margin-left:auto;background:#7b2634;color:#fff;padding:6px;border-radius:8px;border:none;cursor:pointer}
   .no-messages {text-align:center;color:var(--muted);margin-top:24px}
   /* highlight for mention */
   .mentioned {background:linear-gradient(90deg,#3b2b03,#5a4710);border-radius:8px}
   /* small adjustments for responsiveness */
   @media(max-width:900px){
     .middle{display:none}
+    .left{width:64px}
     .login-box{width:94%}
   }
 </style>
@@ -104,6 +123,13 @@
 <body>
 <div style="position:relative">
   <div class="app" id="app">
+    <div class="left">
+      <!-- left column simplified: removed duplicate channel icons list per request -->
+      <div class="bottom-left">
+        <div title="Create / Accounts" id="btn-new" class="icon-btn">+</div>
+        <div title="Settings / Logout" id="btn-settings" class="icon-btn">⚙</div>
+      </div>
+    </div>
 
     <div class="middle">
       <div style="display:flex;align-items:center;justify-content:space-between">
@@ -115,11 +141,8 @@
 
     <div class="right">
       <div class="header">
-        <div class="title-wrap">
-          <div class="title" id="chat-title">Public Chat</div>
-          <button id="dm-delete-user-inline" class="admin-delete" style="display:none">Delete User</button>
-        </div>
-        <div class="controls">
+        <div class="title" id="chat-title">Public Chat</div>
+        <div class="controls" id="header-controls">
           <div class="small">Ping vol</div>
           <div class="volume">
             <input id="volume-slider" type="range" min="0" max="100" value="70"/>
@@ -128,6 +151,8 @@
           <button id="logout" class="btn ghost small">Logout</button>
         </div>
       </div>
+
+      <div id="dm-header-area" style="display:none"></div>
 
       <div class="messages" id="messages"></div>
 
@@ -140,14 +165,9 @@
     </div>
   </div>
 
-  <!-- Login / Create account overlay -->
+  <!-- Login / Create account overlay: create form first, accounts list below -->
   <div class="login-overlay" id="login-overlay">
     <div class="login-box">
-      <div class="login-left">
-        <div style="font-size:18px;font-weight:800">Welcome to HappeeChat2</div>
-        <div class="small">Choose an account or create a new one</div>
-        <div id="accounts-list" style="margin-top:12px;overflow:auto;max-height:60vh"></div>
-      </div>
       <div class="create-form">
         <div style="display:flex;gap:8px;align-items:center">
           <div style="font-weight:700">Create new account</div>
@@ -163,6 +183,15 @@
           <button id="create-account" class="btn">Create account</button>
         </div>
         <div id="login-msg" class="small" style="margin-top:8px;color:var(--muted)"></div>
+        <div style="height:12px"></div>
+        <div style="font-weight:700">Existing accounts</div>
+        <div class="small">Click an account to login (you will be prompted for the password).</div>
+      </div>
+
+      <div class="login-left">
+        <div style="font-size:18px;font-weight:800">Welcome to HappeeChat2</div>
+        <div class="small">Choose an account or create a new one</div>
+        <div id="accounts-list" style="margin-top:12px;overflow:auto"></div>
       </div>
     </div>
   </div>
@@ -176,19 +205,16 @@
 /* ============================
    HappeeChat2 — Single-file app (fixed)
    ============================
-   Fixes in this version:
-   - Removed the duplicate left-most list; only one chat list remains.
-   - Removed search bars and refresh buttons.
-   - Removed the DM label bar; the delete-user button now sits next to "DM with {user}" title.
-   - Fixed double password prompt/duplicate "incorrect password" by removing duplicate click handler.
-   - Kept all original spec features (mentions, unread title badge, 4MB base64 files, YouTube embeds, admin deletes, auto cleanup, 500 public limit).
+   Edits made: removed duplicate login click, removed left duplicated channel list,
+   moved delete-user button to header, removed search/refresh UI elements,
+   reordered login overlay so create account appears first.
 */
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
 import { getDatabase, ref, onValue, set, push, remove, get, child, update, query, orderByChild, limitToLast } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
 
 /* -----------------------
-   Firebase config (provided)
+   Firebase config (you provided)
    -----------------------*/
 const firebaseConfig = {
   apiKey: "AIzaSyDkpDlINFiUzR0PsFRcxxk-N2fhHLnpACI",
@@ -205,9 +231,9 @@ const db = getDatabase(app);
 /* ===============================
    CONFIG / variables you can edit
    =============================== */
-const BLACKLIST = ["badword","anotherbadword"];   // edit as needed
-const MESSAGE_TTL = 7 * 24 * 60 * 60 * 1000;      // 7 days
-const IDLE_USER_TTL = 30 * 24 * 60 * 60 * 1000;   // 30 days
+const BLACKLIST = ["badword","anotherbadword"]; // <<--- edit here
+const MESSAGE_TTL = 7 * 24 * 60 * 60 * 1000; // 7 days
+const IDLE_USER_TTL = 30 * 24 * 60 * 60 * 1000; // 30 days
 const PUBLIC_CHAT_LIMIT = 500;
 const ADMIN_USERNAME = "100happee";
 
@@ -215,6 +241,7 @@ const ADMIN_USERNAME = "100happee";
    Utilities
    ------------------------------*/
 function el(sel){return document.querySelector(sel)}
+function q(sel){return document.querySelectorAll(sel)}
 function uid(){ return 'id_' + Math.random().toString(36).slice(2,9); }
 function formatTimestamp(ts){
   const d = new Date(ts);
@@ -249,6 +276,7 @@ let state = {
 /* ================
    DOM refs
    ================*/
+const loginOverlay = el('#login-overlay');
 const accountsList = el('#accounts-list');
 const createBtn = el('#create-account');
 const avatarFile = el('#avatar-file');
@@ -256,13 +284,10 @@ const avatarPreview = el('#avatar-preview');
 const newUsername = el('#new-username');
 const newPassword = el('#new-password');
 const loginMsg = el('#login-msg');
-const loginOverlay = el('#login-overlay');
 
 const chatList = el('#chat-list');
 const messagesArea = el('#messages');
 const chatTitle = el('#chat-title');
-const deleteUserInlineBtn = el('#dm-delete-user-inline');
-
 const txtMessage = el('#txt-message');
 const sendBtn = el('#send-btn');
 const fileInput = el('#file-input');
@@ -272,9 +297,10 @@ const volumeSlider = el('#volume-slider');
 const pingAudio = el('#ping-audio');
 const logoutBtn = el('#logout');
 const onlineCount = el('#online-count');
+const headerControls = el('#header-controls');
 
 /* -------------------------
-   Firebase paths helpers
+   Firebase helpers
    -------------------------*/
 const dbRef = (p)=> ref(db, p);
 
@@ -300,48 +326,45 @@ function renderAccountsList(){
     const div = document.createElement('div');
     div.className = 'account';
     div.dataset.userid = id;
-    div.innerHTML = \`<img src="\${u.avatar||defaultAvatar(u.username)}" />
+    div.innerHTML = `<img src="${u.avatar||defaultAvatar(u.username)}" />
       <div style="display:flex;flex-direction:column">
-        <div style="font-weight:700">\${u.username}</div>
-        <div class="small">\${u.lastActive?('active '+timeAgo(u.lastActive)): 'never active'}</div>
-      </div>\`;
-    div.onclick = ()=> promptLogin(id, u.username); // single click handler (no delegation) -> fixes double prompt
+        <div style="font-weight:700">${u.username}</div>
+        <div class="small">${u.lastActive?('active '+timeAgo(u.lastActive)): 'never active'}</div>
+      </div>`;
+    // single place that triggers login prompt
+    div.onclick = ()=> promptLogin(id, u.username);
     accountsList.appendChild(div);
   }
 }
 
 function defaultAvatar(name){
   const letter = (name||'?').charAt(0).toUpperCase();
-  return \`https://via.placeholder.com/80/222229/ffffff?text=\${encodeURIComponent(letter)}\`;
+  return `https://via.placeholder.com/80/222229/ffffff?text=${encodeURIComponent(letter)}`;
 }
 
 function renderChatList(){
   chatList.innerHTML = '';
-  // Public chat
+  // public chat
   const pubEl = document.createElement('div');
   pubEl.className = 'chat-item';
   pubEl.dataset.chat = 'public';
-  pubEl.innerHTML = \`
-    <div style="width:44px;height:44px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--accent);background:transparent">#</div>
+  pubEl.innerHTML = `<div style="width:44px;height:44px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--accent);background:transparent">#</div>
     <div class="meta"><div class="name">Public Chat</div><div class="small">Main public room</div></div>
-    \${state.unread.public?('<div class="unread-count">'+state.unread.public+'</div>') : ''}
-  \`;
+    <div class="unread" style="margin-left:auto">${state.unread.public?('<div class="unread-count">'+state.unread.public+'</div>') : ''}</div>`;
   pubEl.onclick = ()=> selectChat('public');
   chatList.appendChild(pubEl);
 
   // DMs
   const users = state.usersCache;
   const entries = Object.entries(users).filter(([id,u])=> !u.deleted);
-  entries.sort((a,b)=> (a[1].username||'').localeCompare(b[1].username));
+  entries.sort((a,b)=> (a[1].username || '').localeCompare(b[1].username));
   for(const [id,u] of entries){
     const elc = document.createElement('div');
     elc.className = 'chat-item';
     elc.dataset.chat = 'dm:'+id;
-    elc.innerHTML = \`
-      <img src="\${u.avatar||defaultAvatar(u.username)}" />
-      <div class="meta"><div class="name">\${u.username}</div><div class="small">Direct message</div></div>
-      \${state.unread['dm:'+id]?('<div class="unread-count">'+state.unread['dm:'+id]+'</div>') : ''}
-    \`;
+    elc.innerHTML = `<img src="${u.avatar||defaultAvatar(u.username)}" />
+      <div class="meta"><div class="name">${u.username}</div><div class="small">Direct message</div></div>
+      ${state.unread['dm:'+id]?('<div class="unread-count">'+state.unread['dm:'+id]+'</div>') : ''}`;
     elc.onclick = ()=> selectChat('dm:'+id);
     chatList.appendChild(elc);
   }
@@ -350,7 +373,7 @@ function renderChatList(){
 function updateOnlineCount(){
   const users = state.usersCache;
   const online = Object.values(users).filter(u=>!u.deleted && (Date.now() - (u.lastActive||0) < 5*60*1000)).length;
-  onlineCount.textContent = \`\${online} online\`;
+  onlineCount.textContent = `${online} online`;
 }
 
 /* =================================
@@ -363,7 +386,7 @@ avatarFile.addEventListener('change', async (ev)=>{
   if(f.size > 4*1024*1024){ alert('Avatar exceeds 4MB'); return; }
   const b = await fileToBase64(f);
   avatarBase64ForCreate = b;
-  avatarPreview.innerHTML = \`<img src="\${b}" style="width:48px;height:48px;border-radius:8px;object-fit:cover" />\`;
+  avatarPreview.innerHTML = `<img src="${b}" style="width:48px;height:48px;border-radius:8px;object-fit:cover" />`;
 });
 
 function openLoginOverlay(){
@@ -378,7 +401,6 @@ createBtn.addEventListener('click', async ()=>{
   const username = (newUsername.value||'').trim();
   const password = newPassword.value||'';
   if(!username || !password){ loginMsg.textContent = 'Enter username and password.'; return; }
-  // disallow duplicate username (unique check)
   const usersSnap = await get(dbRef('users'));
   const users = usersSnap.val() || {};
   for(const [id,u] of Object.entries(users)){
@@ -397,25 +419,25 @@ createBtn.addEventListener('click', async ()=>{
     pwHash: hashed,
     deleted: false
   };
-  await set(dbRef(\`users/\${id}\`), userObj);
+  await set(dbRef(`users/${id}`), userObj);
   loginMsg.textContent = 'Account created. Click your account to login.';
   fetchUsersAndRender();
 });
 
 function promptLogin(userId, username){
-  const pw = prompt(\`Enter password for \${username}\`);
+  const pw = prompt(`Enter password for ${username}`);
   if(pw === null) return;
   attemptLogin(userId, pw);
 }
 
 async function attemptLogin(userId, pw){
-  const snap = await get(dbRef(\`users/\${userId}\`));
+  const snap = await get(dbRef(`users/${userId}`));
   const u = snap.val();
   if(!u || u.deleted){ alert('Account not found'); return; }
   const h = await sha256hex(pw);
   if(h !== u.pwHash){ alert('Incorrect password'); return; }
   state.me = { id: userId, username: u.username, avatar: u.avatar, lastActive: Date.now() };
-  await update(dbRef(\`users/\${userId}\`), { lastActive: Date.now() });
+  await update(dbRef(`users/${userId}`), { lastActive: Date.now() });
   loginOverlay.style.display = 'none';
   afterLogin();
 }
@@ -424,7 +446,6 @@ async function attemptLogin(userId, pw){
    Messages listening & sending
    ============================*/
 function listenMessages(){
-  // Public chat
   onValue(dbRef('messages/public'), snapshot => {
     const obj = snapshot.val() || {};
     const msgs = Object.entries(obj).map(([id,m])=>({id,...m}));
@@ -438,7 +459,6 @@ function listenMessages(){
     enforcePublicLimit();
   });
 
-  // DMs
   onValue(dbRef('messages/dms'), snapshot => {
     const obj = snapshot.val() || {};
     const map = {};
@@ -458,12 +478,12 @@ async function enforcePublicLimit(){
   if(msgs.length > PUBLIC_CHAT_LIMIT){
     const toRemove = msgs.slice(0, msgs.length - PUBLIC_CHAT_LIMIT);
     for(const m of toRemove){
-      await remove(dbRef(\`messages/public/\${m.id}\`));
+      await remove(dbRef(`messages/public/${m.id}`));
     }
   }
 }
 
-async function sendMessage({to='public', text='', file=null}){
+async function sendMessage({to='public', text='', file=null, isDMWith=null}){
   if(!state.me) { alert('Please login'); openLoginOverlay(); return; }
   if(text.trim()==='' && !file){ return; }
   const censored = censorText(text);
@@ -483,27 +503,31 @@ async function sendMessage({to='public', text='', file=null}){
   } else if(to.startsWith('dm:')){
     const otherId = to.split(':')[1];
     const dmid = dmId(state.me.id, otherId);
-    const newRef = push(dbRef(\`messages/dms/\${dmid}/messages\`));
+    const newRef = push(dbRef(`messages/dms/${dmid}/messages`));
     await set(newRef, message);
     playPing();
   }
-  await update(dbRef(\`users/\${state.me.id}\`), { lastActive: Date.now() });
+  await update(dbRef(`users/${state.me.id}`), { lastActive: Date.now() });
 }
 
 function dmId(a,b){ return [a,b].sort().join('__'); }
 function playPing(){ pingAudio.volume = state.pingVolume; pingAudio.currentTime = 0; pingAudio.play().catch(()=>{}); }
 
+/* Render messages for whichever chat is selected */
 function renderMessagesForCurrentChat(){
   const sel = state.selectedChat;
   messagesArea.innerHTML = '';
+  // hide dm-header-area (we're using main header now)
+  const dmArea = el('#dm-header-area'); if(dmArea) dmArea.style.display = 'none';
+
   if(sel === 'public'){
     const msgs = state.messagesCache['public'] || [];
     if(msgs.length === 0){
-      messagesArea.innerHTML = \`<div class="no-messages">No messages yet in public chat.</div>\`;
+      messagesArea.innerHTML = `<div class="no-messages">No messages yet in public chat.</div>`;
       return;
     }
     for(const m of msgs){
-      const el = messageToElement(m);
+      const el = messageToElement(m, 'public');
       messagesArea.appendChild(el);
     }
   } else if(sel.startsWith('dm:')){
@@ -511,35 +535,57 @@ function renderMessagesForCurrentChat(){
     const dmid = dmId(state.me.id, other);
     const msgs = (state.messagesCache['dms'] && state.messagesCache['dms'][dmid]) || [];
     if(msgs.length === 0){
-      messagesArea.innerHTML = \`<div class="no-messages">No messages yet in this DM.</div>\`;
+      messagesArea.innerHTML = `<div class="no-messages">No messages yet in this DM.</div>`;
     } else {
       for(const m of msgs){
-        const el = messageToElement(m);
+        const el = messageToElement(m, dmid);
         messagesArea.appendChild(el);
       }
     }
+    // place admin delete user button into header controls when DM selected
+    renderHeaderForChat(other);
   }
   messagesArea.scrollTop = messagesArea.scrollHeight;
 }
 
-function messageToElement(m){
+function renderHeaderForChat(otherId){
+  // Remove any existing delete-user button in header to avoid duplicates
+  const existing = el('#delete-user-btn');
+  if(existing) existing.remove();
+
+  const u = state.usersCache[otherId] || { username: 'Unknown' };
+  // set chat title
+  chatTitle.textContent = `DM with ${u.username}`;
+
+  if(state.me && state.me.username === ADMIN_USERNAME){
+    const btn = document.createElement('button');
+    btn.id = 'delete-user-btn';
+    btn.className = 'admin-delete';
+    btn.textContent = 'Delete User';
+    btn.onclick = ()=> deleteUserAndMessages(otherId);
+    headerControls.appendChild(btn);
+  }
+}
+
+/* Message element builder */
+function messageToElement(m, chatId){
   const wrapper = document.createElement('div');
   wrapper.className = 'message';
   let highlightClass = '';
   if(state.me && m.text && m.text.toLowerCase().includes('@'+state.me.username.toLowerCase())){
     highlightClass = 'mentioned';
   }
-  wrapper.innerHTML = \`
-    <img class="avatar" src="\${m.avatar || defaultAvatar(m.fromUsername)}" />
-    <div class="body \${highlightClass}">
+  wrapper.innerHTML = `
+    <img class="avatar" src="${m.avatar || defaultAvatar(m.fromUsername)}" />
+    <div class="body ${highlightClass}">
       <div class="meta">
-        <div class="username">\${escapeHtml(m.fromUsername)}</div>
-        <div class="timestamp">\${formatTimestamp(m.ts)}</div>
+        <div class="username">${escapeHtml(m.fromUsername)}</div>
+        <div class="timestamp">${formatTimestamp(m.ts)}</div>
       </div>
-      <div class="text">\${formatTextWithLinksAndMentions(m.text)}</div>
-      \${m.file ? renderFileEmbedHtml(m.file) : ''}
+      <div class="text">${formatTextWithLinksAndMentions(m.text)}</div>
+      ${m.file ? renderFileEmbedHtml(m.file) : ''}
     </div>
-  \`;
+  `;
   if(state.me && state.me.username === ADMIN_USERNAME){
     const del = document.createElement('button');
     del.className = 'admin-delete';
@@ -551,12 +597,12 @@ function messageToElement(m){
       if(confirm('Delete this message?')) {
         const pub = state.messagesCache['public']||[];
         if(pub.find(x=>x.id===m.id)){
-          await remove(dbRef(\`messages/public/\${m.id}\`));
+          await remove(dbRef(`messages/public/${m.id}`));
         } else {
           const dms = state.messagesCache['dms']||{};
           for(const [dmid, msgs] of Object.entries(dms)){
             if(msgs.find(x=>x.id===m.id)){
-              await remove(dbRef(\`messages/dms/\${dmid}/messages/\${m.id}\`));
+              await remove(dbRef(`messages/dms/${dmid}/messages/${m.id}`));
             }
           }
         }
@@ -571,49 +617,43 @@ function renderFileEmbedHtml(file){
   const type = file.type || '';
   const name = escapeHtml(file.name || 'file');
   const data = file.data;
-  let html = \`<div class="file-embed">\`;
+  let html = `<div class="file-embed">`;
   if(type.startsWith('image/')){
-    html += \`<img src="\${data}" style="max-width:540px;border-radius:8px;display:block" /><div><a download="\${name}" href="\${data}">Download</a></div>\`;
+    html += `<img src="${data}" style="max-width:540px;border-radius:8px;display:block" /><div><a download="${name}" href="${data}">Download</a></div>`;
   } else if(type.startsWith('video/')){
-    html += \`<video controls style="max-width:540px;display:block"><source src="\${data}" type="\${type}">Your browser doesn't support video</video><div><a download="\${name}" href="\${data}">Download</a></div>\`;
+    html += `<video controls style="max-width:540px;display:block"><source src="${data}" type="${type}">Your browser doesn't support video</video><div><a download="${name}" href="${data}">Download</a></div>`;
   } else if(type.startsWith('audio/')){
-    html += \`<audio controls><source src="\${data}" type="\${type}">Your browser doesn't support audio</audio><div><a download="\${name}" href="\${data}">Download</a></div>\`;
+    html += `<audio controls><source src="${data}" type="${type}">Your browser doesn't support audio</audio><div><a download="${name}" href="${data}">Download</a></div>`;
   } else {
-    html += \`<div>\${name} <a download="\${name}" href="\${data}">Download</a></div>\`;
+    html += `<div>${name} <a download="${name}" href="${data}">Download</a></div>`;
   }
-  html += \`</div>\`;
+  html += `</div>`;
   return html;
 }
 
-/* -----------------------------
-   Text formatting: links, mentions, youtube embed
-   ----------------------------- */
-function escapeHtml(str=''){ return String(str).replace(/[&<>\"']/g, (m)=>({ '&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',\"'\":'&#39;' }[m])); }
+/* Text formatting: links, mentions, youtube embed */
+function escapeHtml(str=''){ return String(str).replace(/[&<>"']/g, (m)=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
+
 function formatTextWithLinksAndMentions(text=''){
   if(!text) return '';
   let out = escapeHtml(text);
-  // YouTube embed
-  const ytRegex = /(https?:\\/\\/(?:www\\.)?(?:youtube\\.com\\/watch\\?v=|youtu\\.be\\/)([A-Za-z0-9_\\-]+))/ig;
+  const ytRegex = /(https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([A-Za-z0-9_\-]+))/ig;
   out = out.replace(ytRegex, (m, full, id)=>{
-    const iframe = \`<div style="margin-top:8px"><iframe width="420" height="236" src="https://www.youtube.com/embed/\${id}" frameborder="0" allowfullscreen></iframe></div>\`;
+    const iframe = `<div style="margin-top:8px"><iframe width="420" height="236" src="https://www.youtube.com/embed/${id}" frameborder="0" allowfullscreen></iframe></div>`;
     return iframe;
   });
-  // links
-  const urlRegex = /(https?:\\/\\/[^\\s]+)/g;
-  out = out.replace(urlRegex, (m)=>\`<a href="\${m}" target="_blank" style="color:var(--accent)">\${escapeHtml(m)}</a>\`);
-  // mentions
-  out = out.replace(/@([a-zA-Z0-9\\-_]+)/g, (m, uname)=>\`<span class="atlink">@\${escapeHtml(uname)}</span>\`);
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  out = out.replace(urlRegex, (m)=>`<a href="${m}" target="_blank" style="color:var(--accent)">${escapeHtml(m)}</a>`);
+  out = out.replace(/@([a-zA-Z0-9\-_]+)/g, (m, uname)=>`<span class="atlink">@${escapeHtml(uname)}</span>`);
   return out;
 }
 
-/* -----------------------------
-   Unread management + title badge
-   ----------------------------- */
+/* Unread management + title badge */
 function updateUnreadBadges(){
   if(state.unread.public && state.unread.public > 0){
-    document.title = \`[\${state.unread.public}] HappeeChat2\`;
+    document.title = `[${state.unread.public}] HappeeChat2`;
   } else {
-    document.title = \`HappeeChat2\`;
+    document.title = `HappeeChat2`;
   }
   renderChatList();
 }
@@ -625,25 +665,23 @@ function markReadCurrentChat(){
     state._lastSeen['public'] = (state.messagesCache['public']||[]).length;
     state.unread.public = 0;
   } else {
-    const other = sel.split(':')[1];
-    state._lastSeen[sel] = (state.messagesCache['dms'] && state.messagesCache['dms'][dmId(state.me.id, other)] || []).length;
+    state._lastSeen[sel] = (state.messagesCache['dms'] && state.messagesCache['dms'][dmId(state.me.id, sel.split(':')[1])] || []).length;
     state.unread[sel] = 0;
   }
   updateUnreadBadges();
 }
 
-/* =======================
-   File attachment handling
-   ======================= */
+/* File attachment handling */
 attachBtn.addEventListener('click', ()=> fileInput.click());
 fileInput.addEventListener('change', async (ev)=>{
   const f = ev.target.files[0];
   if(!f) return;
   if(f.size > 4*1024*1024){ alert('File exceeds 4MB'); return; }
   const base64 = await fileToBase64(f);
-  txtMessage.value += \` [file:\${f.name}] \`;
+  txtMessage.value += ` [file:${f.name}] `;
   fileInput._pendingFile = { name: f.name, type: f.type, data: base64 };
 });
+
 async function fileToBase64(file){
   return new Promise((res, rej)=>{
     const reader = new FileReader();
@@ -653,9 +691,7 @@ async function fileToBase64(file){
   });
 }
 
-/* ---------------------
-   send button handler
-   --------------------- */
+/* Send handlers */
 sendBtn.addEventListener('click', async ()=>{ await handleSend(); });
 txtMessage.addEventListener('keydown', async (ev)=>{
   if(ev.key === 'Enter' && !ev.shiftKey){
@@ -663,6 +699,7 @@ txtMessage.addEventListener('keydown', async (ev)=>{
     await handleSend();
   }
 });
+
 async function handleSend(){
   const text = txtMessage.value;
   const pendingFile = fileInput._pendingFile || null;
@@ -674,31 +711,23 @@ async function handleSend(){
   markReadCurrentChat();
 }
 
-/* ==========================
-   Chat selection / UI
-   ==========================*/
+/* Chat selection / UI */
 function selectChat(chatId){
   state.selectedChat = chatId;
-  deleteUserInlineBtn.style.display = 'none';
-  if(chatId === 'public'){
-    chatTitle.textContent = 'Public Chat';
-  } else if(chatId.startsWith('dm:')){
+  // update title
+  if(chatId === 'public') chatTitle.textContent = 'Public Chat';
+  else if(chatId.startsWith('dm:')){
     const id = chatId.split(':')[1];
     const u = state.usersCache[id] || { username: 'Unknown' };
-    chatTitle.textContent = \`DM with \${u.username}\`;
-    // Show inline delete user button for admin
-    if(state.me && state.me.username === ADMIN_USERNAME){
-      deleteUserInlineBtn.style.display = 'inline-flex';
-      deleteUserInlineBtn.onclick = ()=> deleteUserAndMessages(id);
-    }
+    chatTitle.textContent = `DM with ${u.username}`;
+    // ensure any previous delete-user button removed (renderHeaderForChat will add if admin)
+    const existing = el('#delete-user-btn'); if(existing) existing.remove();
   }
   renderMessagesForCurrentChat();
   markReadCurrentChat();
 }
 
-/* ==========================
-   Delete user admin
-   ==========================*/
+/* Delete user admin */
 async function deleteUserAndMessages(userId){
   if(!state.me || state.me.username !== ADMIN_USERNAME) { alert('Admin only'); return; }
   if(state.usersCache[userId] && state.usersCache[userId].username === ADMIN_USERNAME){
@@ -706,17 +735,19 @@ async function deleteUserAndMessages(userId){
     return;
   }
   if(!confirm('Delete user and all their messages? This is irreversible.')) return;
-  await update(dbRef(\`users/\${userId}\`), { deleted: true });
+  await update(dbRef(`users/${userId}`), { deleted: true });
   const pub = state.messagesCache['public'] || [];
-  for(const m of pub){ if(m.fromId === userId) await remove(dbRef(\`messages/public/\${m.id}\`)); }
+  for(const m of pub){
+    if(m.fromId === userId) await remove(dbRef(`messages/public/${m.id}`));
+  }
   const dms = state.messagesCache['dms'] || {};
   for(const dmid of Object.keys(dms)){
     if(dmid.includes(userId)){
-      await remove(dbRef(\`messages/dms/\${dmid}\`));
+      await remove(dbRef(`messages/dms/${dmid}`));
     } else {
       for(const m of dms[dmid]){
         if(m.fromId === userId){
-          await remove(dbRef(\`messages/dms/\${dmid}/messages/\${m.id}\`));
+          await remove(dbRef(`messages/dms/${dmid}/messages/${m.id}`));
         }
       }
     }
@@ -724,22 +755,20 @@ async function deleteUserAndMessages(userId){
   alert('User deleted and messages removed.');
 }
 
-/* ============================
-   Auto cleanup (client-side)
-   ============================*/
+/* Auto cleanup */
 async function runCleanup(){
   const now = Date.now();
   const pub = state.messagesCache['public'] || [];
   for(const m of pub){
     if(now - (m.ts || 0) > MESSAGE_TTL){
-      await remove(dbRef(\`messages/public/\${m.id}\`));
+      await remove(dbRef(`messages/public/${m.id}`));
     }
   }
   const dms = state.messagesCache['dms'] || {};
   for(const [dmid, msgs] of Object.entries(dms)){
     for(const m of msgs){
       if(now - (m.ts || 0) > MESSAGE_TTL){
-        await remove(dbRef(\`messages/dms/\${dmid}/messages/\${m.id}\`));
+        await remove(dbRef(`messages/dms/${dmid}/messages/${m.id}`));
       }
     }
   }
@@ -749,18 +778,16 @@ async function runCleanup(){
     if(u.deleted) continue;
     const last = u.lastActive || u.createdAt || 0;
     if(now - last > IDLE_USER_TTL){
-      await update(dbRef(\`users/\${id}\`), { deleted: true });
+      await update(dbRef(`users/${id}`), { deleted: true });
       for(const m of (state.messagesCache['public']||[])){
-        if(m.fromId === id) await remove(dbRef(\`messages/public/\${m.id}\`));
+        if(m.fromId === id) await remove(dbRef(`messages/public/${m.id}`));
       }
       for(const [dmid, msgs2] of Object.entries(state.messagesCache['dms']||{})){
         if(dmid.includes(id)){
-          await remove(dbRef(\`messages/dms/\${dmid}\`));
+          await remove(dbRef(`messages/dms/${dmid}`));
         } else {
           for(const m of msgs2){
-            if(m.fromId === id){
-              await remove(dbRef(\`messages/dms/\${dmid}/messages/\${m.id}\`));
-            }
+            if(m.fromId === id) await remove(dbRef(`messages/dms/${dmid}/messages/${m.id}`));
           }
         }
       }
@@ -768,14 +795,12 @@ async function runCleanup(){
   }
 }
 
-/* ===========================
-   Helpers: censorship, timeago
-   ===========================*/
+/* Censorship & helpers */
 function censorText(s){
   if(!s) return s;
   let out = s;
   for(const w of BLACKLIST){
-    const regex = new RegExp(w.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&'),'ig');
+    const regex = new RegExp(w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),'ig');
     out = out.replace(regex, (m)=> '*'.repeat(m.length));
   }
   return out;
@@ -788,41 +813,64 @@ function timeAgo(ts){
   return Math.floor(diff/86400000)+'d';
 }
 
-/* ========================
-   UI interactions & events
-   ========================*/
-readMessagesBtn.onclick = ()=> markReadCurrentChat();
-volumeSlider.addEventListener('input', (e)=>{
+/* UI interactions */
+readMessagesBtn && readMessagesBtn.addEventListener('click', ()=> markReadCurrentChat());
+volumeSlider && volumeSlider.addEventListener('input', (e)=>{
   const v = clamp(Number(e.target.value)/100, 0, 1);
   state.pingVolume = v;
 });
-logoutBtn.addEventListener('click', ()=>{
+logoutBtn && logoutBtn.addEventListener('click', ()=>{
   state.me = null;
   openLoginOverlay();
 });
+el('#btn-new') && (el('#btn-new').onclick = ()=> openLoginOverlay());
+el('#btn-settings') && (el('#btn-settings').onclick = ()=> {
+  if(!state.me) { alert('Please login.'); openLoginOverlay(); return; }
+  alert('Settings placeholder — you are: ' + state.me.username);
+});
 
-/* ==========================
-   Initial bootstrap & listeners
-   ==========================*/
+/* Startup & listeners */
 async function afterLogin(){
   state._lastSeen = state._lastSeen || {};
   fetchUsersAndRender();
   listenMessages();
-  await update(dbRef(\`users/\${state.me.id}\`), { lastActive: Date.now() });
+  await update(dbRef(`users/${state.me.id}`), { lastActive: Date.now() });
   selectChat('public');
   setInterval(()=> runCleanup().catch(()=>{}), 1000 * 60 * 10);
-  setInterval(()=> {
-    if(state.me) update(dbRef(\`users/\${state.me.id}\`), { lastActive: Date.now() });
-  }, 1000 * 60 * 2);
+  setInterval(()=> { if(state.me) update(dbRef(`users/${state.me.id}`), { lastActive: Date.now() }); }, 1000 * 60 * 2);
 }
 
+/* Initial load */
 (async function init(){
   openLoginOverlay();
   fetchUsersAndRender();
+
+  // single click handler for accounts is attached when accounts rendered (renderAccountsList)
+  // remove duplicated listeners (previous version had both); we keep only the per-div click handler.
+
   window.addEventListener('beforeunload', ()=>{
-    if(state.me) update(dbRef(\`users/\${state.me.id}\`), { lastActive: Date.now() });
+    if(state.me) update(dbRef(`users/${state.me.id}`), { lastActive: Date.now() });
   });
+
 })();
+
+/* Utility & debug */
+function formatTextForStorage(txt){ return censorText(txt); }
+function dataURLtoBlob(dataurl) {
+  var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+      bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+  while(n--){
+      u8arr[n] = bstr.charCodeAt(n);
+  }
+  return new Blob([u8arr], {type:mime});
+}
+window.HappeeChat2State = state;
+
+/* Small: update unread when messages node changes (naive) */
+onValue(dbRef('messages'), snap=>{
+  if(!state.unread.public) state.unread.public = 0;
+  updateUnreadBadges();
+});
 
 </script>
 </body>
