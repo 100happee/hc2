@@ -1,0 +1,1062 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>HappeeChat2</title>
+<link rel="icon" href="https://i1.sndcdn.com/avatars-V22Gw2FsnsI9xMuU-ihNrRA-t240x240.jpg" />
+<!-- Poppins font -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b0e12;
+    --panel:#0f1419;
+    --muted:#8b97a6;
+    --accent:#4da3ff;
+    --contrast:#12161a;
+    --bubble:#0e1317;
+    --mention:#f5d35b;
+    --mention-text:#1a1a1a;
+    --max-width:1200px;
+    font-family: 'Poppins', sans-serif;
+  }
+  html,body{height:100%;margin:0;background:linear-gradient(180deg,#071017 0%, #04060a 100%);color:#e6eef6}
+  .app {
+    max-width:var(--max-width);
+    margin:18px auto;
+    height:88vh;
+    display:flex;
+    gap:12px;
+    border-radius:12px;
+    overflow:hidden;
+    box-shadow:0 10px 30px rgba(0,0,0,0.6);
+  }
+  /* Middle column (users list / chats) */
+  .middle {
+    width:260px;
+    background:var(--panel);
+    padding:12px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    box-sizing:border-box;
+  }
+  .chat-list {overflow:auto;flex:1;padding-top:6px}
+  .chat-item {display:flex;gap:8px;align-items:center;padding:8px;border-radius:8px;cursor:pointer}
+  .chat-item:hover{background:rgba(255,255,255,0.02)}
+  .chat-item img {width:44px;height:44px;border-radius:8px;object-fit:cover}
+  .chat-item .meta {display:flex;flex-direction:column}
+  .chat-item .meta .name {font-weight:600}
+  .unread-count {margin-left:auto;background:#2b6aab;padding:4px 6px;border-radius:6px;font-size:12px}
+  /* Right column (messages) */
+  .right {
+    flex:1;
+    background:linear-gradient(180deg,var(--contrast),#081017);
+    display:flex;flex-direction:column;padding:12px;box-sizing:border-box;
+  }
+  .header {
+    display:flex;align-items:center;gap:12px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.02);
+  }
+  .header .title {font-size:18px;font-weight:700}
+  .header .controls {margin-left:auto;display:flex;gap:8px;align-items:center}
+  .btn {background:var(--accent);color:#06121a;padding:8px 12px;border-radius:8px;border:none;cursor:pointer;font-weight:600}
+  .btn.ghost{background:transparent;color:var(--accent);border:1px solid rgba(255,255,255,0.04)}
+  .read-btn{background:#334153;color:white;padding:6px 8px;border-radius:8px}
+  .volume {display:flex;align-items:center;gap:8px}
+  .volume input[type=range]{width:120px}
+  .messages {flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:12px}
+  .message {display:flex;gap:12px;align-items:flex-start;padding:8px;border-radius:8px;background:transparent;transition:background 120ms}
+  .message:hover{background:rgba(255,255,255,0.01)}
+  .message .avatar {width:48px;height:48px;border-radius:8px;object-fit:cover}
+  .message .body {flex:1}
+  .message .meta {display:flex;gap:8px;align-items:center}
+  .message .username{font-weight:700}
+  .message .text{margin-top:6px;white-space:pre-wrap}
+  .message .timestamp{font-size:11px;color:var(--muted);margin-left:auto}
+  .mention {background:var(--mention);color:var(--mention-text);padding:2px 6px;border-radius:6px}
+  .atlink {color:var(--accent);font-weight:700}
+  .file-embed {margin-top:8px;border-radius:8px;overflow:hidden;border:1px solid rgba(255,255,255,0.03);padding:6px;background: #070a0c}
+  .input-row {display:flex;gap:8px;align-items:center;padding-top:8px;border-top:1px solid rgba(255,255,255,0.02)}
+  .input-row textarea{flex:1;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:inherit;min-height:44px;max-height:120px;resize:none}
+  .input-row .add-btn{width:44px;height:44px;border-radius:8px;border:1px dashed rgba(255,255,255,0.03);display:flex;align-items:center;justify-content:center;cursor:pointer}
+  .small {font-size:12px;color:var(--muted)}
+  .login-overlay{position:absolute;inset:0;background:linear-gradient(180deg, rgba(3,6,9,0.6), rgba(3,6,9,0.9));display:flex;align-items:center;justify-content:center;z-index:9999}
+  .login-box{width:760px;background:linear-gradient(180deg,#07101a,#081218);padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,0.03);display:flex;flex-direction:column;gap:12px;box-sizing:border-box}
+  .create-form{display:flex;flex-direction:column;gap:8px}
+  .account {display:flex;align-items:center;gap:8px;padding:8px;border-radius:8px;cursor:pointer}
+  .account:hover{background:rgba(255,255,255,0.02)}
+  .account img{width:48px;height:48px;border-radius:8px;object-fit:cover}
+  input,button,select,textarea{font-family:inherit}
+  .danger{background:#ff6b6b;color:white}
+  .admin-delete {margin-left:auto;background:#7b2634;color:#fff;padding:6px;border-radius:8px;border:none;cursor:pointer}
+  .no-messages {text-align:center;color:var(--muted);margin-top:24px}
+  /* highlight for mention */
+  .mentioned {background:linear-gradient(90deg,#3b2b03,#5a4710);border-radius:8px}
+  /* small adjustments for responsiveness */
+  @media(max-width:900px){
+    .middle{display:none}
+    .login-box{width:94%}
+  }
+
+  /* Group modal */
+  .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;z-index:10000}
+  .modal{width:560px;background:var(--panel);padding:14px;border-radius:10px}
+  .user-checkbox{display:flex;align-items:center;gap:8px;padding:6px;border-radius:6px}
+  .user-checkbox:hover{background:rgba(255,255,255,0.02);cursor:pointer}
+</style>
+</head>
+<body>
+<div style="position:relative">
+  <div class="app" id="app">
+    <!-- Leftmost bar intentionally removed -->
+
+    <div class="middle">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div style="font-weight:700">Chats</div>
+        <div class="small" id="online-count">0 online</div>
+      </div>
+      <div class="chat-list" id="chat-list"></div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button id="create-group-btn" class="btn ghost small" style="flex:1">+ Make Group DM</button>
+      </div>
+    </div>
+
+    <div class="right">
+      <div class="header">
+        <div class="title" id="chat-title">Public Chat</div>
+        <div class="controls" id="header-controls">
+          <div class="small">Ping vol</div>
+          <div class="volume">
+            <input id="volume-slider" type="range" min="0" max="100" value="70"/>
+          </div>
+          <button id="read-messages" class="read-btn small">Read Messages</button>
+          <button id="logout" class="btn ghost small">Logout</button>
+        </div>
+      </div>
+
+      <div id="dm-header-area" style="display:none"></div>
+
+      <div class="messages" id="messages"></div>
+
+      <div class="input-row">
+        <label class="add-btn" title="Attach file" id="attach-btn">+</label>
+        <input type="file" id="file-input" style="display:none" />
+        <textarea id="txt-message" placeholder="Write a message..."></textarea>
+        <button id="send-btn" class="btn">Send Message</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Login / Create account overlay: create form FIRST, then existing accounts -->
+  <div class="login-overlay" id="login-overlay">
+    <div class="login-box">
+      <div class="create-form">
+        <div style="display:flex;gap:8px;align-items:center">
+          <div style="font-weight:700">Create new account</div>
+          <div class="small" style="margin-left:auto">Admin username: <code>100happee</code></div>
+        </div>
+        <input id="new-username" placeholder="username (unique)" />
+        <input id="new-password" type="password" placeholder="password" />
+        <div style="display:flex;gap:8px;align-items:center">
+          <input id="avatar-file" type="file" accept="image/*" />
+          <div id="avatar-preview" style="width:48px;height:48px;border-radius:8px;background:rgba(255,255,255,0.02);display:flex;align-items:center;justify-content:center">avatar</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button id="create-account" class="btn">Create account</button>
+        </div>
+        <div id="login-msg" class="small" style="margin-top:8px;color:var(--muted)"></div>
+        <div style="height:12px"></div>
+        <div style="font-weight:700">Existing accounts</div>
+        <div class="small">Click an account to login (you will be prompted for the password).</div>
+      </div>
+
+      <div id="accounts-list" style="max-height:340px;overflow:auto"></div>
+    </div>
+  </div>
+
+  <!-- Group creation modal -->
+  <div class="modal-backdrop" id="group-modal">
+    <div class="modal">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div style="font-weight:700">Create Group DM</div>
+        <button id="close-group-modal" class="btn ghost small">Cancel</button>
+      </div>
+      <div style="margin-top:8px">
+        <input id="group-title" placeholder="Group title (required)" style="width:100%;padding:8px;border-radius:6px;background:transparent;border:1px solid rgba(255,255,255,0.03)" />
+      </div>
+      <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+        <input id="group-icon-file" type="file" accept="image/*" />
+        <div id="group-icon-preview" style="width:48px;height:48px;border-radius:8px;background:rgba(255,255,255,0.02);display:flex;align-items:center;justify-content:center">icon</div>
+      </div>
+      <div style="margin-top:10px;max-height:240px;overflow:auto" id="group-users-area"></div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button id="create-group-confirm" class="btn" style="flex:1">Create Group</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ping sound -->
+<audio id="ping-audio" src="./ping.mp3" preload="auto"></audio>
+
+<!-- Firebase SDK (modular) -->
+<script type="module">
+/* ============================
+   HappeeChat2 — Single-file app (with Group DM)
+   Based on original file (included in this repo). Group DM feature:
+   - "Make Group DM" button opens modal to choose members, title, icon.
+   - Groups stored under /groups in Firebase. Visible only to members.
+   - Group messages stored under /messages/groups/<groupId>/messages
+   ============================
+*/
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+import { getDatabase, ref, onValue, set, push, remove, get, update } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+
+/* -----------------------
+   Firebase config (provided)
+   -----------------------*/
+const firebaseConfig = {
+  apiKey: "AIzaSyDkpDlINFiUzR0PsFRcxxk-N2fhHLnpACI",
+  authDomain: "hchat2-1d004.firebaseapp.com",
+  databaseURL: "https://hchat2-1d004-default-rtdb.firebaseio.com",
+  projectId: "hchat2-1d004",
+  storageBucket: "hchat2-1d004.firebasestorage.app",
+  messagingSenderId: "807685526215",
+  appId: "1:807685526215:web:6b9042099ff0b464be24e2"
+};
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+/* ===============================
+   CONFIG
+   =============================== */
+const BLACKLIST = ["badword","anotherbadword"]; // editable
+const MESSAGE_TTL = 7 * 24 * 60 * 60 * 1000; // 7 days
+const IDLE_USER_TTL = 30 * 24 * 60 * 60 * 1000; // 30 days
+const PUBLIC_CHAT_LIMIT = 500;
+const ADMIN_USERNAME = "100happee";
+
+/* ------------------------------
+   Utilities
+   ------------------------------*/
+const el =(s)=> document.querySelector(s);
+function uid(){ return 'id_' + Math.random().toString(36).slice(2,9); }
+function formatTimestamp(ts){
+  const d = new Date(ts);
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const dd = String(d.getDate()).padStart(2,'0');
+  let hh = d.getHours(); const ampm = hh>=12? 'p' : 'a';
+  hh = hh % 12; if(hh===0) hh=12;
+  const min = String(d.getMinutes()).padStart(2,'0');
+  return `${mm}/${dd} at ${hh}:${min}${ampm}`;
+}
+async function sha256hex(str){
+  const enc = new TextEncoder();
+  const data = enc.encode(str);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2,'0')).join('');
+}
+function clamp(n,a,b){ return Math.max(a, Math.min(b, n)); }
+
+/* ================================
+   App state
+   ================================*/
+let state = {
+  me: null,
+  selectedChat: 'public',
+  usersCache: {},
+  groupsCache: {},
+  unread: {},
+  messagesCache: {},
+  pingVolume: 0.7
+};
+
+/* ================
+   DOM refs
+   ================*/
+const loginOverlay = el('#login-overlay');
+const accountsList = el('#accounts-list');
+const createBtn = el('#create-account');
+const avatarFile = el('#avatar-file');
+const avatarPreview = el('#avatar-preview');
+const newUsername = el('#new-username');
+const newPassword = el('#new-password');
+const loginMsg = el('#login-msg');
+
+const chatList = el('#chat-list');
+const messagesArea = el('#messages');
+const chatTitle = el('#chat-title');
+const txtMessage = el('#txt-message');
+const sendBtn = el('#send-btn');
+const fileInput = el('#file-input');
+const attachBtn = el('#attach-btn');
+const readMessagesBtn = el('#read-messages');
+const volumeSlider = el('#volume-slider');
+const pingAudio = el('#ping-audio');
+const logoutBtn = el('#logout');
+const onlineCount = el('#online-count');
+const headerControls = el('#header-controls');
+
+const createGroupBtn = el('#create-group-btn');
+const groupModal = el('#group-modal');
+const closeGroupModal = el('#close-group-modal');
+const groupUsersArea = el('#group-users-area');
+const groupTitleInput = el('#group-title');
+const groupIconFile = el('#group-icon-file');
+const groupIconPreview = el('#group-icon-preview');
+const createGroupConfirm = el('#create-group-confirm');
+
+let avatarBase64ForCreate = null;
+let groupIconBase64 = null;
+
+/* -------------------------
+   Firebase helpers
+   -------------------------*/
+const dbRef = (p)=> ref(db, p);
+
+/* ============================
+   Core: users, groups & accounts
+   ============================*/
+function fetchUsersAndRender(){
+  onValue(dbRef('users'), snapshot => {
+    const users = snapshot.val() || {};
+    state.usersCache = users;
+    renderAccountsList();
+    renderChatList();
+    updateOnlineCount();
+    renderGroupUsersInModal();
+  });
+}
+
+function fetchGroupsAndListen(){
+  onValue(dbRef('groups'), snapshot=>{
+    const groups = snapshot.val() || {};
+    state.groupsCache = groups;
+    renderChatList();
+  });
+}
+
+function renderAccountsList(){
+  accountsList.innerHTML = '';
+  const users = state.usersCache;
+  const entries = Object.entries(users).sort((a,b)=> (b[1].lastActive||0)-(a[1].lastActive||0));
+  for(const [id, u] of entries){
+    if(u.deleted) continue;
+    const div = document.createElement('div');
+    div.className = 'account';
+    div.dataset.userid = id;
+    div.innerHTML = `<img src="${u.avatar||defaultAvatar(u.username)}" />
+      <div style="display:flex;flex-direction:column">
+        <div style="font-weight:700">${u.username}</div>
+        <div class="small">${u.lastActive?('active '+timeAgo(u.lastActive)): 'never active'}</div>
+      </div>`;
+    div.onclick = ()=> promptLogin(id, u.username);
+    accountsList.appendChild(div);
+  }
+}
+
+function defaultAvatar(name){
+  const letter = (name||'?').charAt(0).toUpperCase();
+  return `https://via.placeholder.com/80/222229/ffffff?text=${encodeURIComponent(letter)}`;
+}
+
+function renderChatList(){
+  chatList.innerHTML = '';
+  // public chat
+  const pubEl = document.createElement('div');
+  pubEl.className = 'chat-item';
+  pubEl.dataset.chat = 'public';
+  pubEl.innerHTML = `<div style="width:44px;height:44px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--accent);background:transparent">#</div>
+    <div class="meta"><div class="name">Public Chat</div><div class="small">Main public room</div></div>
+    <div class="unread" style="margin-left:auto">${state.unread.public?('<div class="unread-count">'+state.unread.public+'</div>') : ''}</div>`;
+  pubEl.onclick = ()=> selectChat('public');
+  chatList.appendChild(pubEl);
+
+  // DMs (individual)
+  const users = state.usersCache;
+  const entries = Object.entries(users).filter(([id,u])=> !u.deleted);
+  entries.sort((a,b)=> (a[1].username || '').localeCompare(b[1].username));
+  for(const [id,u] of entries){
+    // don't show yourself in list (optional) -- but original showed everyone; keep showing
+    const elc = document.createElement('div');
+    elc.className = 'chat-item';
+    elc.dataset.chat = 'dm:'+id;
+    elc.innerHTML = `<img src="${u.avatar||defaultAvatar(u.username)}" />
+      <div class="meta"><div class="name">${u.username}</div><div class="small">Direct message</div></div>
+      ${state.unread['dm:'+id]?('<div class="unread-count">'+state.unread['dm:'+id]+'</div>') : ''}`;
+    elc.onclick = ()=> selectChat('dm:'+id);
+    chatList.appendChild(elc);
+  }
+
+  // Group DMs: show only groups where current user is member
+  const groups = state.groupsCache || {};
+  const gEntries = Object.entries(groups).sort((a,b)=> (a[1].title||'').localeCompare(b[1].title||''));
+  for(const [gid, g] of gEntries){
+    if(!g || !g.members) continue;
+    if(!state.me) continue;
+    if(g.members.indexOf(state.me.id) === -1) continue;
+    const elg = document.createElement('div');
+    elg.className = 'chat-item';
+    elg.dataset.chat = 'group:'+gid;
+    elg.innerHTML = `<img src="${g.icon||defaultAvatar(g.title||'G')}" />
+      <div class="meta"><div class="name">${g.title}</div><div class="small">Group DM • ${g.members.length} members</div></div>
+      ${state.unread['group:'+gid]?('<div class="unread-count">'+state.unread['group:'+gid]+'</div>') : ''}`;
+    elg.onclick = ()=> selectChat('group:'+gid);
+    chatList.appendChild(elg);
+  }
+}
+
+function updateOnlineCount(){
+  const users = state.usersCache;
+  const online = Object.values(users).filter(u=>!u.deleted && (Date.now() - (u.lastActive||0) < 5*60*1000)).length;
+  onlineCount.textContent = `${online} online`;
+}
+
+/* =================================
+   Login / create account flows
+   =================================*/
+avatarFile.addEventListener('change', async (ev)=>{
+  const f = ev.target.files[0];
+  if(!f) return;
+  if(f.size > 4*1024*1024){ alert('Avatar exceeds 4MB'); return; }
+  const b = await fileToBase64(f);
+  avatarBase64ForCreate = b;
+  avatarPreview.innerHTML = `<img src="${b}" style="width:48px;height:48px;border-radius:8px;object-fit:cover" />`;
+});
+
+function openLoginOverlay(){
+  loginOverlay.style.display = 'flex';
+  newUsername.value = '';
+  newPassword.value = '';
+  avatarBase64ForCreate = null;
+  avatarPreview.innerHTML = 'avatar';
+}
+
+createBtn.addEventListener('click', async ()=>{
+  const username = (newUsername.value||'').trim();
+  const password = newPassword.value||'';
+  if(!username || !password){ loginMsg.textContent = 'Enter username and password.'; return; }
+  const usersSnap = await get(dbRef('users'));
+  const users = usersSnap.val() || {};
+  for(const [id,u] of Object.entries(users)){
+    if(u.username && u.username.toLowerCase() === username.toLowerCase()){
+      loginMsg.textContent = 'Username already exists.';
+      return;
+    }
+  }
+  const id = uid();
+  const hashed = await sha256hex(password);
+  const userObj = {
+    username,
+    avatar: avatarBase64ForCreate || defaultAvatar(username),
+    createdAt: Date.now(),
+    lastActive: Date.now(),
+    pwHash: hashed,
+    deleted: false
+  };
+  await set(dbRef(`users/${id}`), userObj);
+  loginMsg.textContent = 'Account created. Click your account to login.';
+  fetchUsersAndRender();
+});
+
+function promptLogin(userId, username){
+  const pw = prompt(`Enter password for ${username}`);
+  if(pw === null) return;
+  attemptLogin(userId, pw);
+}
+
+async function attemptLogin(userId, pw){
+  const snap = await get(dbRef(`users/${userId}`));
+  const u = snap.val();
+  if(!u || u.deleted){ alert('Account not found'); return; }
+  const h = await sha256hex(pw);
+  if(h !== u.pwHash){ alert('Incorrect password'); return; }
+  state.me = { id: userId, username: u.username, avatar: u.avatar, lastActive: Date.now() };
+  await update(dbRef(`users/${userId}`), { lastActive: Date.now() });
+  loginOverlay.style.display = 'none';
+  afterLogin();
+}
+
+/* ============================
+   Messages listening & sending
+   ============================*/
+function listenMessages(){
+  onValue(dbRef('messages/public'), snapshot => {
+    const obj = snapshot.val() || {};
+    const msgs = Object.entries(obj).map(([id,m])=>({id,...m}));
+    msgs.sort((a,b)=> (a.ts||0)-(b.ts||0));
+    state.messagesCache['public'] = msgs;
+    renderMessagesForCurrentChat();
+    if(state.selectedChat !== 'public'){
+      // compute unread as new length difference
+      const last = state._lastSeen && state._lastSeen['public'] ? state._lastSeen['public'] : 0;
+      state.unread.public = Math.max(0, msgs.length - last);
+      updateUnreadBadges();
+    }
+    enforcePublicLimit();
+  });
+
+  onValue(dbRef('messages/dms'), snapshot => {
+    const obj = snapshot.val() || {};
+    const map = {};
+    for(const [dmid, room] of Object.entries(obj || {})){
+      const messagesObj = room.messages || {};
+      const msgs = Object.entries(messagesObj).map(([id,m])=>({id,...m}));
+      msgs.sort((a,b)=> (a.ts||0)-(b.ts||0));
+      map[dmid] = msgs;
+    }
+    state.messagesCache['dms'] = map;
+    renderMessagesForCurrentChat();
+  });
+
+  // group messages
+  onValue(dbRef('messages/groups'), snapshot=>{
+    const obj = snapshot.val() || {};
+    const map = {};
+    for(const [gid, room] of Object.entries(obj || {})){
+      const messagesObj = room.messages || {};
+      const msgs = Object.entries(messagesObj).map(([id,m])=>({id,...m}));
+      msgs.sort((a,b)=> (a.ts||0)-(b.ts||0));
+      map[gid] = msgs;
+    }
+    state.messagesCache['groups'] = map;
+    renderMessagesForCurrentChat();
+  });
+}
+
+async function enforcePublicLimit(){
+  const msgs = state.messagesCache['public'] || [];
+  if(msgs.length > PUBLIC_CHAT_LIMIT){
+    const toRemove = msgs.slice(0, msgs.length - PUBLIC_CHAT_LIMIT);
+    for(const m of toRemove){
+      await remove(dbRef(`messages/public/${m.id}`));
+    }
+  }
+}
+
+async function sendMessage({to='public', text='', file=null}){
+  if(!state.me) { alert('Please login'); openLoginOverlay(); return; }
+  if(text.trim()==='' && !file){ return; }
+  const censored = censorText(text);
+  const message = {
+    fromId: state.me.id,
+    fromUsername: state.me.username,
+    avatar: state.me.avatar,
+    text: censored,
+    ts: Date.now(),
+  };
+  if(file) message.file = file;
+
+  if(to === 'public'){
+    const newRef = push(dbRef('messages/public'));
+    await set(newRef, message);
+    playPing();
+  } else if(to.startsWith('dm:')){
+    const otherId = to.split(':')[1];
+    const dmid = dmId(state.me.id, otherId);
+    const newRef = push(dbRef(`messages/dms/${dmid}/messages`));
+    await set(newRef, message);
+    playPing();
+  } else if(to.startsWith('group:')){
+    const gid = to.split(':')[1];
+    const newRef = push(dbRef(`messages/groups/${gid}/messages`));
+    await set(newRef, message);
+    playPing();
+  }
+  await update(dbRef(`users/${state.me.id}`), { lastActive: Date.now() });
+}
+
+function dmId(a,b){ return [a,b].sort().join('__'); }
+function playPing(){ pingAudio.volume = state.pingVolume; pingAudio.currentTime = 0; pingAudio.play().catch(()=>{}); }
+
+/* Render messages for whichever chat is selected */
+function renderMessagesForCurrentChat(){
+  const sel = state.selectedChat;
+  messagesArea.innerHTML = '';
+  const dmArea = el('#dm-header-area'); if(dmArea) dmArea.style.display = 'none';
+
+  if(sel === 'public'){
+    const msgs = state.messagesCache['public'] || [];
+    if(msgs.length === 0){
+      messagesArea.innerHTML = `<div class="no-messages">No messages yet in public chat.</div>`;
+      return;
+    }
+    for(const m of msgs){
+      const elNode = messageToElement(m, 'public');
+      messagesArea.appendChild(elNode);
+    }
+  } else if(sel.startsWith('dm:')){
+    const other = sel.split(':')[1];
+    const dmid = dmId(state.me.id, other);
+    const msgs = (state.messagesCache['dms'] && state.messagesCache['dms'][dmid]) || [];
+    if(msgs.length === 0){
+      messagesArea.innerHTML = `<div class="no-messages">No messages yet in this DM.</div>`;
+    } else {
+      for(const m of msgs){
+        const elNode = messageToElement(m, dmid);
+        messagesArea.appendChild(elNode);
+      }
+    }
+    renderHeaderForChat(other);
+  } else if(sel.startsWith('group:')){
+    const gid = sel.split(':')[1];
+    const msgs = (state.messagesCache['groups'] && state.messagesCache['groups'][gid]) || [];
+    if(msgs.length === 0){
+      messagesArea.innerHTML = `<div class="no-messages">No messages yet in this Group DM.</div>`;
+    } else {
+      for(const m of msgs){
+        const elNode = messageToElement(m, gid, true);
+        messagesArea.appendChild(elNode);
+      }
+    }
+    renderHeaderForGroup(gid);
+  }
+  messagesArea.scrollTop = messagesArea.scrollHeight;
+}
+
+function renderHeaderForChat(otherId){
+  const existing = el('#delete-user-btn');
+  if(existing) existing.remove();
+
+  const u = state.usersCache[otherId] || { username: 'Unknown' };
+  chatTitle.textContent = `DM with ${u.username}`;
+
+  if(state.me && state.me.username === ADMIN_USERNAME){
+    const btn = document.createElement('button');
+    btn.id = 'delete-user-btn';
+    btn.className = 'admin-delete';
+    btn.textContent = 'Delete User';
+    btn.onclick = ()=> deleteUserAndMessages(otherId);
+    headerControls.appendChild(btn);
+  }
+}
+
+function renderHeaderForGroup(gid){
+  const existing = el('#group-options-btn');
+  if(existing) existing.remove();
+  const g = state.groupsCache[gid] || { title: 'Group' };
+  chatTitle.textContent = `${g.title} (Group)`;
+
+  // if current user is the creator or admin, they could delete group (optional)
+  if(state.me && state.me.username === ADMIN_USERNAME){
+    const btn = document.createElement('button');
+    btn.id = 'group-options-btn';
+    btn.className = 'admin-delete';
+    btn.textContent = 'Delete Group';
+    btn.onclick = async ()=> {
+      if(confirm('Delete this group (and its messages)?')) {
+        await remove(dbRef(`groups/${gid}`));
+        await remove(dbRef(`messages/groups/${gid}`));
+      }
+    };
+    headerControls.appendChild(btn);
+  }
+}
+
+/* Message element */
+function messageToElement(m, contextId, isGroup){
+  const wrapper = document.createElement('div');
+  wrapper.className = 'message';
+  let highlightClass = '';
+  if(state.me && m.text && m.text.toLowerCase().includes('@'+state.me.username.toLowerCase())){
+    highlightClass = 'mentioned';
+  }
+  wrapper.innerHTML = `
+    <img class="avatar" src="${m.avatar || defaultAvatar(m.fromUsername)}" />
+    <div class="body ${highlightClass}">
+      <div class="meta">
+        <div class="username">${escapeHtml(m.fromUsername)}</div>
+        <div class="timestamp">${formatTimestamp(m.ts)}</div>
+      </div>
+      <div class="text">${formatTextWithLinksAndMentions(m.text)}</div>
+      ${m.file ? renderFileEmbedHtml(m.file) : ''}
+    </div>
+  `;
+  if(state.me && state.me.username === ADMIN_USERNAME){
+    const del = document.createElement('button');
+    del.className = 'admin-delete';
+    del.textContent = 'Delete';
+    del.style.marginLeft = '8px';
+    del.style.height = '32px'; del.style.alignSelf='flex-start';
+    del.onclick = async (ev)=>{
+      ev.stopPropagation();
+      if(confirm('Delete this message?')) {
+        // attempt to find and delete from the right place
+        // public
+        const pub = state.messagesCache['public']||[];
+        if(pub.find(x=>x.id===m.id)){
+          await remove(dbRef(`messages/public/${m.id}`));
+          return;
+        }
+        // dms
+        const dms = state.messagesCache['dms']||{};
+        for(const [dmid, msgs] of Object.entries(dms)){
+          if(msgs.find(x=>x.id===m.id)){
+            await remove(dbRef(`messages/dms/${dmid}/messages/${m.id}`));
+            return;
+          }
+        }
+        // groups
+        const groups = state.messagesCache['groups']||{};
+        for(const [gid, msgs] of Object.entries(groups)){
+          if(msgs.find(x=>x.id===m.id)){
+            await remove(dbRef(`messages/groups/${gid}/messages/${m.id}`));
+            return;
+          }
+        }
+      }
+    };
+    wrapper.querySelector('.body').prepend(del);
+  }
+  return wrapper;
+}
+
+function renderFileEmbedHtml(file){
+  const type = file.type || '';
+  const name = escapeHtml(file.name || 'file');
+  const data = file.data;
+  let html = `<div class="file-embed">`;
+  if(type.startsWith('image/')){
+    html += `<img src="${data}" style="max-width:540px;border-radius:8px;display:block" /><div><a download="${name}" href="${data}">Download</a></div>`;
+  } else if(type.startsWith('video/')){
+    html += `<video controls style="max-width:540px;display:block"><source src="${data}" type="${type}">Your browser doesn't support video</video><div><a download="${name}" href="${data}">Download</a></div>`;
+  } else if(type.startsWith('audio/')){
+    html += `<audio controls><source src="${data}" type="${type}">Your browser doesn't support audio</audio><div><a download="${name}" href="${data}">Download</a></div>`;
+  } else {
+    html += `<div>${name} <a download="${name}" href="${data}">Download</a></div>`;
+  }
+  html += `</div>`;
+  return html;
+}
+
+/* Text formatting: links + mentions (no YouTube embed) */
+function escapeHtml(str=''){ return String(str).replace(/[&<>"']/g, (m)=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','"':'&quot;','\'':'&#39;' }[m])); }
+
+function formatTextWithLinksAndMentions(text=''){
+  if(!text) return '';
+  let out = escapeHtml(text);
+  // URLs -> clickable links
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  out = out.replace(urlRegex, (m)=>`<a href="${m}" target="_blank" style="color:var(--accent)">${escapeHtml(m)}</a>`);
+  // @mentions -> styled span
+  out = out.replace(/@([a-zA-Z0-9\-_]+)/g, (m, uname)=>`<span class="atlink">@${escapeHtml(uname)}</span>`);
+  return out;
+}
+
+/* Unread management + title badge */
+function updateUnreadBadges(){
+  // pick up to the most important unread (public count shown)
+  if(state.unread.public && state.unread.public > 0){
+    document.title = `[${state.unread.public}] HappeeChat2`;
+  } else {
+    // if groups have unread, show a generic badge
+    const groupUnread = Object.keys(state.unread).filter(k=>k.startsWith('group:') && state.unread[k] > 0);
+    if(groupUnread.length > 0){
+      document.title = `[${groupUnread.length}] HappeeChat2`;
+    } else {
+      document.title = `HappeeChat2`;
+    }
+  }
+  renderChatList();
+}
+
+function markReadCurrentChat(){
+  if(!state._lastSeen) state._lastSeen = {};
+  const sel = state.selectedChat;
+  if(sel === 'public'){
+    state._lastSeen['public'] = (state.messagesCache['public']||[]).length;
+    state.unread.public = 0;
+  } else if(sel.startsWith('dm:')){
+    const other = sel.split(':')[1];
+    const dmid = dmId(state.me.id, other);
+    state._lastSeen[sel] = (state.messagesCache['dms'] && state.messagesCache['dms'][dmid] || []).length;
+    state.unread[sel] = 0;
+  } else if(sel.startsWith('group:')){
+    const gid = sel.split(':')[1];
+    state._lastSeen[sel] = (state.messagesCache['groups'] && state.messagesCache['groups'][gid] || []).length;
+    state.unread[sel] = 0;
+  }
+  updateUnreadBadges();
+}
+
+/* File attachment handling */
+attachBtn.addEventListener('click', ()=> fileInput.click());
+fileInput.addEventListener('change', async (ev)=>{
+  const f = ev.target.files[0];
+  if(!f) return;
+  if(f.size > 4*1024*1024){ alert('File exceeds 4MB'); return; }
+  const base64 = await fileToBase64(f);
+  txtMessage.value += ` [file:${f.name}] `;
+  fileInput._pendingFile = { name: f.name, type: f.type, data: base64 };
+});
+
+function fileToBase64(file){
+  return new Promise((res, rej)=>{
+    const reader = new FileReader();
+    reader.onload = ()=> res(reader.result);
+    reader.onerror = ()=> rej('err');
+    reader.readAsDataURL(file);
+  });
+}
+
+/* Send handlers */
+sendBtn.addEventListener('click', async ()=>{ await handleSend(); });
+txtMessage.addEventListener('keydown', async (ev)=>{
+  if(ev.key === 'Enter' && !ev.shiftKey){
+    ev.preventDefault();
+    await handleSend();
+  }
+});
+
+async function handleSend(){
+  const text = txtMessage.value;
+  const pendingFile = fileInput._pendingFile || null;
+  const to = state.selectedChat;
+  const file = pendingFile;
+  await sendMessage({ to, text, file });
+  txtMessage.value = '';
+  fileInput.value = ''; fileInput._pendingFile = null;
+  markReadCurrentChat();
+}
+
+/* Chat selection / UI */
+function selectChat(chatId){
+  state.selectedChat = chatId;
+  if(chatId === 'public') chatTitle.textContent = 'Public Chat';
+  else if(chatId.startsWith('dm:')){
+    const id = chatId.split(':')[1];
+    const u = state.usersCache[id] || { username: 'Unknown' };
+    chatTitle.textContent = `DM with ${u.username}`;
+    const existing = el('#delete-user-btn'); if(existing) existing.remove();
+  } else if(chatId.startsWith('group:')){
+    const gid = chatId.split(':')[1];
+    const g = state.groupsCache[gid] || { title: 'Group' };
+    chatTitle.textContent = `${g.title} (Group)`;
+    const existing = el('#group-options-btn'); if(existing) existing.remove();
+  }
+  renderMessagesForCurrentChat();
+  markReadCurrentChat();
+}
+
+/* Delete user admin */
+async function deleteUserAndMessages(userId){
+  if(!state.me || state.me.username !== ADMIN_USERNAME) { alert('Admin only'); return; }
+  if(state.usersCache[userId] && state.usersCache[userId].username === ADMIN_USERNAME){
+    alert('Cannot delete admin user.');
+    return;
+  }
+  if(!confirm('Delete user and all their messages? This is irreversible.')) return;
+  await update(dbRef(`users/${userId}`), { deleted: true });
+  const pub = state.messagesCache['public'] || [];
+  for(const m of pub){
+    if(m.fromId === userId) await remove(dbRef(`messages/public/${m.id}`));
+  }
+  const dms = state.messagesCache['dms'] || {};
+  for(const dmid of Object.keys(dms)){
+    if(dmid.includes(userId)){
+      await remove(dbRef(`messages/dms/${dmid}`));
+    } else {
+      for(const m of dms[dmid]){
+        if(m.fromId === userId){
+          await remove(dbRef(`messages/dms/${dmid}/messages/${m.id}`));
+        }
+      }
+    }
+  }
+  // remove from groups and optionally delete groups with no members
+  const groups = state.groupsCache || {};
+  for(const [gid, g] of Object.entries(groups)){
+    if(!g || !g.members) continue;
+    if(g.members.indexOf(userId) !== -1){
+      const newMembers = g.members.filter(x=>x!==userId);
+      if(newMembers.length === 0){
+        await remove(dbRef(`groups/${gid}`));
+        await remove(dbRef(`messages/groups/${gid}`));
+      } else {
+        await update(dbRef(`groups/${gid}`), { members: newMembers });
+      }
+    }
+  }
+
+  alert('User deleted and messages removed.');
+}
+
+/* Group creation UI */
+createGroupBtn.addEventListener('click', ()=>{
+  if(!state.me){ alert('Please login to create groups'); openLoginOverlay(); return; }
+  groupTitleInput.value = '';
+  groupIconPreview.innerHTML = 'icon';
+  groupIconFile.value = '';
+  groupIconBase64 = null;
+  renderGroupUsersInModal();
+  groupModal.style.display = 'flex';
+});
+closeGroupModal.addEventListener('click', ()=> groupModal.style.display = 'none');
+
+groupIconFile.addEventListener('change', async (ev)=>{
+  const f = ev.target.files[0];
+  if(!f) return;
+  if(f.size > 4*1024*1024){ alert('Icon exceeds 4MB'); return; }
+  groupIconBase64 = await fileToBase64(f);
+  groupIconPreview.innerHTML = `<img src="${groupIconBase64}" style="width:48px;height:48px;border-radius:8px;object-fit:cover" />`;
+});
+
+function renderGroupUsersInModal(){
+  if(!groupUsersArea) return;
+  groupUsersArea.innerHTML = '';
+  const users = state.usersCache || {};
+  const entries = Object.entries(users).filter(([id,u])=> !u.deleted);
+  for(const [id,u] of entries){
+    // checkbox item
+    const div = document.createElement('div');
+    div.className = 'user-checkbox';
+    div.innerHTML = `<input type="checkbox" data-uid="${id}" ${id===state.me?.id ? 'checked disabled' : ''} /> <img src="${u.avatar||defaultAvatar(u.username)}" style="width:36px;height:36px;border-radius:6px;object-fit:cover"/> <div style="display:flex;flex-direction:column"><div style="font-weight:700">${u.username}</div><div class="small">ID: ${id}</div></div>`;
+    groupUsersArea.appendChild(div);
+    div.addEventListener('click', (e)=>{
+      const cb = div.querySelector('input[type=checkbox]');
+      if(cb.disabled) return;
+      cb.checked = !cb.checked;
+    });
+  }
+}
+
+createGroupConfirm.addEventListener('click', async ()=>{
+  const title = (groupTitleInput.value||'').trim();
+  if(!title){ alert('Enter a group title'); return; }
+  const checks = Array.from(groupUsersArea.querySelectorAll('input[type=checkbox]'));
+  const members = checks.filter(c=>c.checked).map(c=>c.dataset.uid);
+  if(members.indexOf(state.me.id) === -1) members.push(state.me.id);
+  const gid = uid();
+  const groupObj = {
+    title,
+    icon: groupIconBase64 || defaultAvatar(title),
+    members,
+    creator: state.me.id,
+    createdAt: Date.now()
+  };
+  await set(dbRef(`groups/${gid}`), groupObj);
+  groupModal.style.display = 'none';
+  fetchUsersAndRender();
+  fetchGroupsAndListen();
+});
+
+/* Auto cleanup */
+async function runCleanup(){
+  const now = Date.now();
+  const pub = state.messagesCache['public'] || [];
+  for(const m of pub){
+    if(now - (m.ts || 0) > MESSAGE_TTL){
+      await remove(dbRef(`messages/public/${m.id}`));
+    }
+  }
+  const dms = state.messagesCache['dms'] || {};
+  for(const [dmid, msgs] of Object.entries(dms)){
+    for(const m of msgs){
+      if(now - (m.ts || 0) > MESSAGE_TTL){
+        await remove(dbRef(`messages/dms/${dmid}/messages/${m.id}`));
+      }
+    }
+  }
+  const groupsMsgs = state.messagesCache['groups'] || {};
+  for(const [gid, msgs] of Object.entries(groupsMsgs)){
+    for(const m of msgs){
+      if(now - (m.ts || 0) > MESSAGE_TTL){
+        await remove(dbRef(`messages/groups/${gid}/messages/${m.id}`));
+      }
+    }
+  }
+  const users = state.usersCache || {};
+  for(const [id,u] of Object.entries(users)){
+    if(u.username === ADMIN_USERNAME) continue;
+    if(u.deleted) continue;
+    const last = u.lastActive || u.createdAt || 0;
+    if(now - last > IDLE_USER_TTL){
+      await update(dbRef(`users/${id}`), { deleted: true });
+      for(const m of (state.messagesCache['public']||[])){
+        if(m.fromId === id) await remove(dbRef(`messages/public/${m.id}`));
+      }
+      for(const [dmid, msgs2] of Object.entries(state.messagesCache['dms']||{})){
+        if(dmid.includes(id)){
+          await remove(dbRef(`messages/dms/${dmid}`));
+        } else {
+          for(const m of msgs2){
+            if(m.fromId === id){
+              await remove(dbRef(`messages/dms/${dmid}/messages/${m.id}`));
+            }
+          }
+        }
+      }
+      // remove from groups or delete empty groups
+      for(const [gid, g] of Object.entries(state.groupsCache||{})){
+        if(!g || !g.members) continue;
+        if(g.members.indexOf(id) !== -1){
+          const newM = g.members.filter(x=>x!==id);
+          if(newM.length === 0){
+            await remove(dbRef(`groups/${gid}`));
+            await remove(dbRef(`messages/groups/${gid}`));
+          } else {
+            await update(dbRef(`groups/${gid}`), { members: newM });
+          }
+        }
+      }
+    }
+  }
+}
+
+/* Censorship & helpers */
+function censorText(s){
+  if(!s) return s;
+  let out = s;
+  for(const w of BLACKLIST){
+    const regex = new RegExp(w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),'ig');
+    out = out.replace(regex, (m)=> '*'.repeat(m.length));
+  }
+  return out;
+}
+function timeAgo(ts){
+  const diff = Date.now() - (ts||0);
+  if(diff < 60*1000) return 'just now';
+  if(diff < 60*60*1000) return Math.floor(diff/60000)+'m';
+  if(diff < 24*60*60*1000) return Math.floor(diff/3600000)+'h';
+  return Math.floor(diff/86400000)+'d';
+}
+
+/* UI interactions */
+readMessagesBtn && readMessagesBtn.addEventListener('click', ()=> markReadCurrentChat());
+volumeSlider && volumeSlider.addEventListener('input', (e)=>{
+  const v = clamp(Number(e.target.value)/100, 0, 1);
+  state.pingVolume = v;
+});
+logoutBtn && logoutBtn.addEventListener('click', ()=>{
+  state.me = null;
+  openLoginOverlay();
+});
+
+/* Startup & listeners */
+async function afterLogin(){
+  state._lastSeen = state._lastSeen || {};
+  fetchUsersAndRender();
+  fetchGroupsAndListen();
+  listenMessages();
+  await update(dbRef(`users/${state.me.id}`), { lastActive: Date.now() });
+  selectChat('public');
+  setInterval(()=> runCleanup().catch(()=>{}), 1000 * 60 * 10);
+  setInterval(()=> { if(state.me) update(dbRef(`users/${state.me.id}`), { lastActive: Date.now() }); }, 1000 * 60 * 2);
+}
+
+/* Initial load */
+(function init(){
+  openLoginOverlay();
+  fetchUsersAndRender();
+  fetchGroupsAndListen();
+
+  window.addEventListener('beforeunload', ()=>{
+    if(state.me) update(dbRef(`users/${state.me.id}`), { lastActive: Date.now() });
+  });
+})();
+
+</script>
+</body>
+</html>
