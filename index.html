@@ -790,7 +790,7 @@ attachBtn.addEventListener('click', ()=> fileInput.click());
 fileInput.addEventListener('change', async (ev)=>{
   const f = ev.target.files[0];
   if(!f) return;
-  if(f.size > 4*1024*1024){ alert('File exceeds 4MB'); return; }
+  if(f.size > 8*1024*1024){ alert('File exceeds 8MB'); return; }
   const base64 = await fileToBase64(f);
   txtMessage.value += ` [file:${f.name}] `;
   fileInput._pendingFile = { name: f.name, type: f.type, data: base64 };
